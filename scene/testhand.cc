@@ -1,3 +1,4 @@
+// comment
 #include <buola/scene.h>
 #include <buola/scene/csceneview.h>
 #include <buola/scene/ccamera.h>
