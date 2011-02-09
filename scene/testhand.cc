@@ -12,6 +12,8 @@
 #include <buola/image/io_pgm.h>
 #include <buola/scene/crttransform.h>
 
+#include <buola/widgets/cbutton.h>
+
 #include <buola/geometry/clookatmatrix.h>
 #include <buola/geometry/c3dvector.h>
 #include <buola/geometry/cperspectiveprojectionmatrix.h>
@@ -19,6 +21,7 @@
 #include <iterator>
 #include <vector>
 
+#include "csavebutton.h"
 #include "cjointslider.h"
 #include "cposslider.h"
 #include "ccamslider.h"
@@ -37,8 +40,10 @@ void addCamSlider(int y,scene::CSceneView *pScene,std::vector<CCamSlider*> &pRot
         const std::string &pCaption,scene::PPerspectiveCamera &pCam)
 {
     gui::CLabelBox *lLabel=new gui::CLabelBox;
+    // dynamic cast unnecesary
 	lLabel->Create(dynamic_cast<gui::CWindow*>(pScene),CPoint(0,y),CSize(150,10));
 	lLabel->SetStyle(LBL_TOP);
+    // L"..." creates them wide directly 
 	lLabel->SetCaption(decode(pCaption));
 	lLabel->Show();
 
@@ -107,9 +112,17 @@ int main(int pNArg,char **pArgs)
 
     std::vector<double> lJointsV;
     double lCam2PalmRArray[9];
-    if(pNArg>1)
+    if(pNArg<3)
     {
-        for(int i=2;i<pNArg;++i)
+        std::cerr << "command -- objectObjPath [ joint0 joint1 .. joint 33]" << std::cout;
+        exit(-1);
+    }
+    //"/home/javier/tmp/objAfterFeedback/objs/adductedThumb_onlyObject.obj"
+    scene::PGeode lGeode=scene::CGeode::Import(pArgs[2],0.1);
+    std::string lObjectObjPath(pArgs[2]);
+    if(pNArg>3)
+    {
+        for(int i=3;i<pNArg;++i)
             lJointsV.push_back(atof(pArgs[i]));
         for(int i=0;i<9;i++)
             lCam2PalmRArray[i] = lJointsV[i];
@@ -169,7 +182,6 @@ int main(int pNArg,char **pArgs)
         lHandTransf->AddChild(lSkeleton.GetSkeleton()->GetRoot()->GetTransform());
         lScene->AddObject(lSkeleton.GetSkeleton());
 
-        scene::PGeode lGeode=scene::CGeode::Import("/home/javier/tmp/objAfterFeedback/objs/adductedThumb_onlyObject.obj",0.1);
         lObjTransf->SetTranslation(lObjZero);
         lGeode->AttachTo(lObjTransf);
         lScene->GetWorld()->AddChild(lObjTransf);
@@ -192,6 +204,8 @@ int main(int pNArg,char **pArgs)
         lView.Create(NULL,CSize(800,600));
         lView.SetCamera(lCamera);
         lView.SetScene(lScene);
+
+        CSaveButton(lJointValues,lTransformations,lCamera,lObjectObjPath,&lView);
 
         lView.Show();
 
