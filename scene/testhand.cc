@@ -32,9 +32,6 @@ static const buola::C3DVector lObjZero(0,0,0);
 
 using namespace buola;
 
-static const scene::EJointType gJointTypes[3] = {buola::scene::JOINTTYPE_BEND,buola::scene::JOINTTYPE_SIDE,buola::scene::JOINTTYPE_TWIST};
-static const std::string gJointTypeNames[3] = {"bend","side","twist"};
-
 void addCamSlider(int y,scene::CSceneView *pScene,std::vector<CCamSlider*> &pRots,
         C3DRotation &pRot,double buola::C3DRotation::*pRotVal,
         const std::string &pCaption,scene::PPerspectiveCamera &pCam)
@@ -206,7 +203,7 @@ int main(int pNArg,char **pArgs)
         lView.SetCamera(lCamera);
         lView.SetScene(lScene);
 
-        CSaveButton lButton(lJointValues,lTransformations,lCamera,lObjectObjPath,&lView);
+        CSaveButton lButton(lSkeleton,lHandTransf,lCamera,lObjectObjPath,&lView);
 
         lView.Show();
 

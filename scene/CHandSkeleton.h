@@ -38,6 +38,9 @@ enum EBone
     BONE_COUNT
 };
 
+static const buola::scene::EJointType gJointTypes[3] = {buola::scene::JOINTTYPE_BEND,buola::scene::JOINTTYPE_SIDE,buola::scene::JOINTTYPE_TWIST};
+static const std::string gJointTypeNames[3] = {"bend","side","twist"};
+
 class CHandSkeleton
 {
     public:
@@ -209,7 +212,9 @@ class CHandSkeleton
 
     }
         const buola::scene::PSkeleton& GetSkeleton() const{return mSkeleton;}
+
         buola::scene::PBone& operator[] (unsigned i){return mBones[i];}
+        const buola::scene::PBone& operator[] (unsigned i) const {return mBones[i];}
 
     private:
         buola::scene::PSkeleton mSkeleton;
