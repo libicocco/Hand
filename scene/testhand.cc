@@ -152,6 +152,7 @@ int main(int pNArg,char **pArgs)
     try
     {
         scene::CSceneView lView;
+        lView.Create(NULL,CSize(800,600));
         CApp lApp;
 
         scene::PPerspectiveCamera lCamera=new scene::CPerspectiveCamera;
@@ -201,7 +202,6 @@ int main(int pNArg,char **pArgs)
             for(int j=0;j<3;j++)
                 addSlider(((i+3)*3+j)*20,gJointTypes[j],lSkeleton[i],&lView,lSliders,lJointValues[i*3+j]);
         
-        lView.Create(NULL,CSize(800,600));
         lView.SetCamera(lCamera);
         lView.SetScene(lScene);
 
