@@ -119,6 +119,7 @@ int main(int pNArg,char **pArgs)
     }
     //"/home/javier/tmp/objAfterFeedback/objs/adductedThumb_onlyObject.obj"
     scene::PGeode lGeode=scene::CGeode::Import(pArgs[2],0.1);
+    std::cout << pArgs[2] << std::endl;
     std::string lObjectObjPath(pArgs[2]);
     if(pNArg>3)
     {
@@ -205,7 +206,7 @@ int main(int pNArg,char **pArgs)
         lView.SetCamera(lCamera);
         lView.SetScene(lScene);
 
-        CSaveButton(lJointValues,lTransformations,lCamera,lObjectObjPath,&lView);
+        CSaveButton lButton(lJointValues,lTransformations,lCamera,lObjectObjPath,&lView);
 
         lView.Show();
 
