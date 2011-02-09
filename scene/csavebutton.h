@@ -16,6 +16,7 @@ class CSaveButton
         buola::gui::CButton  mButton;
         const CHandSkeleton mSkeleton;
         const buola::scene::PRTTransform &mHandTransformation;
+        const buola::scene::PRTTransform &mObjTransformation;
         const buola::scene::PPerspectiveCamera &mCamera;
         const std::string &mObjectObjPath;
         buola::scene::CSceneView *mScene;
@@ -23,11 +24,13 @@ class CSaveButton
     public:
         CSaveButton(const CHandSkeleton &pSkeleton,
                     const buola::scene::PRTTransform &pHandTransformation,
+                    const buola::scene::PRTTransform &pObjTransformation,
                     const buola::scene::PPerspectiveCamera &pCamera,
                     const std::string &pObjectObjPath,
                     buola::scene::CSceneView *pScene):
             mSkeleton(pSkeleton),
             mHandTransformation(pHandTransformation),
+            mObjTransformation(pObjTransformation),
             mCamera(pCamera),
             mObjectObjPath(pObjectObjPath),
             mScene(pScene)
@@ -52,26 +55,17 @@ class CSaveButton
                 lDialog.DoModal();
 
                 if(lDialog.mResult==buola::gui::DIALOG_OK)
-                {
-                    std::cout << "Dialog OK!" << std::endl;
                     mURL=lDialog.mFile;
-                    std::cout << "Dialog done!" << std::endl;
-                }
                 else
-                {
-                    std::cout << "Dialog not OK!" << std::endl;
                     return ;
-                }
             }
 
-            buola::CQuaternion lHandQuat(mHandTransformation->GetWorldTransform());
+            buola::CQuaternion lHandQuat(mSkeleton[BONE_FOREARM]->GetTransform()->GetWorldTransform());
             buola::CQuaternion lCamQuat(mCamera->GetLookAtMatrix());
             // order still unclear
             buola::CQuaternion lHandCamQuat=conj(lCamQuat)*lHandQuat;
             buola::C3DMatrix lHandCamMat(buola::nRotate,lHandCamQuat);
-            //std::cout << lHandCamQuat << std::endl;
-            //std::cout << lHandCamMat<< std::endl;
-            std::ofstream lFS("/tmp/pose.txt");
+            std::ofstream lFS(mURL.GetFullPath().c_str());
             lFS << "# hand orientation with respect to the camera" << std::endl;
             for(int i=0;i<3;++i)
                 for(int j=0;j<3;++j)
@@ -81,6 +75,24 @@ class CSaveButton
             for(int j=0;j<17;++j)
                 for(int a=0;a<3;++a)
                     lFS << mSkeleton[j]->GetJointValue(gJointTypes[a]) << " ";
+            lFS << std::endl;
+            lFS << "# hand wrist and fingertip positions" << std::endl;
+            std::vector<int> lPosesToSave {BONE_FOREARM,BONE_THUMB3,BONE_INDEX3,BONE_MIDDLE3,BONE_RING3,BONE_PINKY3};
+            for(int i=0;i<lPosesToSave.size();++i)
+            {
+              buola::C3DVector lPose=mSkeleton[lPosesToSave[i]]->GetTransformedEndPoint();
+              lFS << lPose.x << " " << lPose.y << " " << lPose.z << " ";
+            }
+            lFS << std::endl;
+            lFS << "# hand transform" << std::endl;
+            buola::C3DMatrix lHandMatrix = mHandTransformation->GetWorldTransform();
+            for(int i=0;i<16;++i)
+              lFS << lHandMatrix[i] << " ";
+            lFS << std::endl;
+            lFS << "# object transform" << std::endl;
+            buola::C3DMatrix lObjMatrix = mObjTransformation->GetWorldTransform();
+            for(int i=0;i<16;++i)
+              lFS << lObjMatrix[i] << " ";
             lFS << std::endl;
             lFS.close();
         }

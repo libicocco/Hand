@@ -13,6 +13,7 @@
 #include <buola/scene/crttransform.h>
 
 #include <buola/widgets/cbutton.h>
+#include <buola/app/cprogramoption.h>
 
 #include <buola/geometry/clookatmatrix.h>
 #include <buola/geometry/c3dvector.h>
@@ -102,47 +103,56 @@ void addSlider(int y,const scene::EJointType &pType,scene::PBone &pBone,
 	lBox->eChanged.connect(boost::bind(&CJointSlider::OnSlider,lSlider));
 }
 
+static buola::CTypedProgramOption<std::string> gObjectPathOption("objpath",'o',L"Path to object .obj file");
+static buola::CTypedProgramOption<std::string> gPosePathOption("posepath",'p',L"Path to pose file");
 
 int main(int pNArg,char **pArgs)
 {
     buola_init(pNArg,pArgs);
+    
+    std::string lObjectPath("/home/javier/tmp/objAfterFeedback/objs/adductedThumb_onlyObject.obj");
+    std::string lPosePath;
 
-    std::vector<double> lJointsV;
-    double lCam2PalmRArray[9];
-    if(pNArg<3)
+    if(gObjectPathOption.IsSet())
     {
-        std::cerr << "command -- objectObjPath [ joint0 joint1 .. joint 33]" << std::cout;
-        exit(-1);
+      lObjectPath=gObjectPathOption.GetValue();
+      std::cout << "object path set to " << lObjectPath << std::endl;
     }
+    if(gPosePathOption.IsSet())
+    {
+      std::cout << "TODO: load pose " << gPosePathOption.GetValue() << std::endl;
+    }
+    const std::vector<std::string> &lJointsV=CProgramOption::GetArgs();
+    
+    
     //"/home/javier/tmp/objAfterFeedback/objs/adductedThumb_onlyObject.obj"
     scene::PGeode lGeode=scene::CGeode::Import(pArgs[2],0.1);
     std::cout << pArgs[2] << std::endl;
     std::string lObjectObjPath(pArgs[2]);
-    if(pNArg>3)
-    {
-        for(int i=3;i<pNArg;++i)
-            lJointsV.push_back(atof(pArgs[i]));
-        for(int i=0;i<9;i++)
-            lCam2PalmRArray[i] = lJointsV[i];
-    }
+    
+    double *lCam2PalmRArray=(lJointsV.size()==34) ? new double[9]{
+      stod(lJointsV[0]),stod(lJointsV[1]),stod(lJointsV[2]),
+      stod(lJointsV[3]),stod(lJointsV[4]),stod(lJointsV[5]),
+      stod(lJointsV[6]),stod(lJointsV[7]),stod(lJointsV[8])} : new double[9]{1,0,0,1,0,0,1,0,0};
+    
     double *lJointValues=(lJointsV.size()==34)?new double[51]{
         0.000,0.000,0.000,   // arm, to keep or modify based on Rot matrix (0-8)
         2.100,7.102,-3.408,  // wrist, to keep
-        asin(lJointsV[29])*180.0/M_PI,asin(lJointsV[30])*180.0/M_PI,asin(lJointsV[31])*180.0/M_PI,
-        asin(lJointsV[32])*180.0/M_PI,0.0,0.0,
-        asin(lJointsV[33])*180.0/M_PI,0.0,0.0,
-        asin(lJointsV[9])*180.0/M_PI,asin(lJointsV[10])*180.0/M_PI,asin(lJointsV[11])*180.0/M_PI,
-        asin(lJointsV[12])*180.0/M_PI,0.0,0.0,
-        asin(lJointsV[13])*180.0/M_PI,0.0,0.0,
-        asin(lJointsV[14])*180.0/M_PI,asin(lJointsV[15])*180.0/M_PI,asin(lJointsV[16])*180.0/M_PI,
-        asin(lJointsV[17])*180.0/M_PI,0.0,0.0,
-        asin(lJointsV[18])*180.0/M_PI,0.0,0.0,
-        asin(lJointsV[19])*180.0/M_PI,asin(lJointsV[20])*180.0/M_PI,asin(lJointsV[21])*180.0/M_PI,
-        asin(lJointsV[22])*180.0/M_PI,0.0,0.0,
-        asin(lJointsV[23])*180.0/M_PI,0.0,0.0,
-        asin(lJointsV[24])*180.0/M_PI,asin(lJointsV[25])*180.0/M_PI,asin(lJointsV[26])*180.0/M_PI,
-        asin(lJointsV[27])*180.0/M_PI,0.0,0.0,
-            asin(lJointsV[28])*180.0/M_PI,0.0,0.0
+        asin(stod(lJointsV[29]))*180.0/M_PI,asin(stod(lJointsV[30]))*180.0/M_PI,asin(stod(lJointsV[31]))*180.0/M_PI,
+        asin(stod(lJointsV[32]))*180.0/M_PI,0.0,0.0,
+        asin(stod(lJointsV[33]))*180.0/M_PI,0.0,0.0,
+        asin(stod(lJointsV[9]))*180.0/M_PI,asin(stod(lJointsV[10]))*180.0/M_PI,asin(stod(lJointsV[11]))*180.0/M_PI,
+        asin(stod(lJointsV[12]))*180.0/M_PI,0.0,0.0,
+        asin(stod(lJointsV[13]))*180.0/M_PI,0.0,0.0,
+        asin(stod(lJointsV[14]))*180.0/M_PI,asin(stod(lJointsV[15]))*180.0/M_PI,asin(stod(lJointsV[16]))*180.0/M_PI,
+        asin(stod(lJointsV[17]))*180.0/M_PI,0.0,0.0,
+        asin(stod(lJointsV[18]))*180.0/M_PI,0.0,0.0,
+        asin(stod(lJointsV[19]))*180.0/M_PI,asin(stod(lJointsV[20]))*180.0/M_PI,asin(stod(lJointsV[21]))*180.0/M_PI,
+        asin(stod(lJointsV[22]))*180.0/M_PI,0.0,0.0,
+        asin(stod(lJointsV[23]))*180.0/M_PI,0.0,0.0,
+        asin(stod(lJointsV[24]))*180.0/M_PI,asin(stod(lJointsV[25]))*180.0/M_PI,asin(stod(lJointsV[26]))*180.0/M_PI,
+        asin(stod(lJointsV[27]))*180.0/M_PI,0.0,0.0,
+            asin(stod(lJointsV[28]))*180.0/M_PI,0.0,0.0
     }:new double[51]{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     C3DMatrix cam2PalmR=(lJointsV.size()==34)?C3DMatrix(n9Array,lCam2PalmRArray):C3DMatrix();
     C3DMatrix palm2CamR = inverse(cam2PalmR);
@@ -203,7 +213,7 @@ int main(int pNArg,char **pArgs)
         lView.SetCamera(lCamera);
         lView.SetScene(lScene);
 
-        CSaveButton lButton(lSkeleton,lHandTransf,lCamera,lObjectObjPath,&lView);
+        CSaveButton lButton(lSkeleton,lHandTransf,lObjTransf,lCamera,lObjectObjPath,&lView);
 
         lView.Show();
 
