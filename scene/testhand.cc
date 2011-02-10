@@ -229,6 +229,7 @@ int main(int pNArg,char **pArgs)
       }
     }
     
+    std::cout << "importing " << lObjectPath.c_str() << std::endl;
     scene::PGeode lGeode=buola::scene::CGeode::Import(lObjectPath.c_str(),0.1);
     std::cout << pArgs[2] << std::endl;
     std::string lObjectObjPath(pArgs[2]);
