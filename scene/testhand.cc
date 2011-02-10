@@ -19,8 +19,11 @@
 #include <buola/geometry/c3dvector.h>
 #include <buola/geometry/cperspectiveprojectionmatrix.h>
 
+#include <sstream>
 #include <iterator>
+#include <algorithm>
 #include <vector>
+#include <fstream>
 
 #include "csavebutton.h"
 #include "cjointslider.h"
@@ -30,6 +33,7 @@
 
 static const buola::C3DVector lHandZero(0.31,-0.57,0.02);
 static const buola::C3DVector lObjZero(0,0,0);
+static const unsigned gBufSize(1024);
 
 using namespace buola;
 
@@ -81,26 +85,26 @@ void addXYZSlider(int y,scene::CSceneView *pScene,std::vector<CPosSlider*> &pPos
 }
 
 void addSlider(int y,const scene::EJointType &pType,scene::PBone &pBone,
-        scene::CSceneView *pScene, std::vector<CJointSlider*> &pSliders,double lDefaultValue)
+        scene::CSceneView *pScene, std::vector<CJointSlider*> &pSliders)
 {
-    gui::CLabelBox *lLabel=new gui::CLabelBox;
-	lLabel->Create(dynamic_cast<gui::CWindow*>(pScene),CPoint(0,y),CSize(150,10));
-	lLabel->SetStyle(LBL_TOP);
-	lLabel->SetCaption(decode(pBone->GetName()+gJointTypeNames[pType]));
-	lLabel->Show();
-
-    gui::CSliderBox *lBox=new gui::CSliderBox;
-	lBox->Create(dynamic_cast<gui::CWindow*>(pScene),CPoint(20,y+10),CSize(150,10));
-	lBox->SetStyle(gui::CSliderBox::STYLE_HORIZONTAL);
-	lBox->SetRange(-180,180);
-	lBox->SetValue(lDefaultValue);
-	lBox->Show();
-
-	CJointSlider *lSlider=new CJointSlider(lLabel,lBox,pType,pBone,pScene);
-	pSliders.push_back(lSlider);
-    lSlider->OnSlider();
-
-	lBox->eChanged.connect(boost::bind(&CJointSlider::OnSlider,lSlider));
+  gui::CLabelBox *lLabel=new gui::CLabelBox;
+  lLabel->Create(dynamic_cast<gui::CWindow*>(pScene),CPoint(0,y),CSize(150,10));
+  lLabel->SetStyle(LBL_TOP);
+  lLabel->SetCaption(decode(pBone->GetName()+gJointTypeNames[pType]));
+  lLabel->Show();
+  
+  gui::CSliderBox *lBox=new gui::CSliderBox;
+  lBox->Create(dynamic_cast<gui::CWindow*>(pScene),CPoint(20,y+10),CSize(150,10));
+  lBox->SetStyle(gui::CSliderBox::STYLE_HORIZONTAL);
+  lBox->SetRange(-180,180);
+  lBox->SetValue(pBone->GetJointValue(pType)*180/M_PI);
+  lBox->Show();
+  
+  CJointSlider *lSlider=new CJointSlider(lLabel,lBox,pType,pBone,pScene);
+  pSliders.push_back(lSlider);
+  lSlider->OnSlider();
+  
+  lBox->eChanged.connect(boost::bind(&CJointSlider::OnSlider,lSlider));
 }
 
 static buola::CTypedProgramOption<std::string> gObjectPathOption("objpath",'o',L"Path to object .obj file");
@@ -112,6 +116,9 @@ int main(int pNArg,char **pArgs)
     
     std::string lObjectPath("/home/javier/tmp/objAfterFeedback/objs/adductedThumb_onlyObject.obj");
     std::string lPosePath;
+    
+    double *lCam2PalmRArray=new double[16];
+    CHandSkeleton lSkeleton("/home/javier/scene/rHandP3.obj","/home/javier/scene/hand_texture.ppm");
 
     if(gObjectPathOption.IsSet())
     {
@@ -120,41 +127,116 @@ int main(int pNArg,char **pArgs)
     }
     if(gPosePathOption.IsSet())
     {
-      std::cout << "TODO: load pose " << gPosePathOption.GetValue() << std::endl;
+      std::ifstream lFS(gPosePathOption.GetValue().c_str());
+      char lLine[gBufSize];
+      lFS.getline(lLine,gBufSize); // comment
+      lFS.getline(lLine,gBufSize); // cam
+      std::stringstream lOriSS(lLine);
+      std::copy(std::istream_iterator<double>(lOriSS),
+                std::istream_iterator<double>(),
+                lCam2PalmRArray);
+      lFS.getline(lLine,gBufSize); // comment
+      lFS.getline(lLine,gBufSize); // joints
+      std::stringstream lJointsSS(lLine);
+      double *lJointValues=new double[51];
+      std::cout << "Parsing joint values" << std::endl;
+      std::copy(std::istream_iterator<double>(lJointsSS),
+                std::istream_iterator<double>(),
+                lJointValues);
+      for(int i=0;i<17;++i)
+        for(int a=0;a<3;++a)
+          lSkeleton[i]->SetJointValue(gJointTypes[a],lJointValues[i*3+a]);
+      std::copy(lJointValues,lJointValues+51,std::ostream_iterator<double>(std::cout," "));
+      std::cout << std::endl;
+      delete []lJointValues;
+        
+      lFS.getline(lLine,gBufSize); // comment
+      lFS.getline(lLine,gBufSize); // positions, not required
+      lFS.getline(lLine,gBufSize); // comment
+      lFS.getline(lLine,gBufSize); // hand Transform
+      double *lHT=new double[16];
+      std::stringstream lHTSS(lLine);
+      std::copy(std::istream_iterator<double>(lHTSS),
+                std::istream_iterator<double>(),
+                lHT);
+      lFS.getline(lLine,gBufSize); // comment
+      lFS.getline(lLine,gBufSize); // obj Transform
+      double *lOT=new double[16];
+      std::stringstream lOTSS(lLine);
+      std::copy(std::istream_iterator<double>(lOTSS),
+                std::istream_iterator<double>(),
+                lOT);
+      lFS.getline(lLine,gBufSize); // comment
+      lFS.getline(lLine,gBufSize); // obj Transform
+      lObjectPath = std::string(lLine);
+//       std::copy(lC,lC+9,std::ostream_iterator<double>(std::cout," "));
+//       std::cout << std::endl;
+//       std::copy(lHT,lHT+16,std::ostream_iterator<double>(std::cout," "));
+//       std::cout << std::endl;
+//       std::copy(lOT,lOT+16,std::ostream_iterator<double>(std::cout," "));
+//       std::cout << std::endl << lOS << std::endl;
     }
-    const std::vector<std::string> &lJointsV=CProgramOption::GetArgs();
+    else
+    {
+      const std::vector<std::string> &lJointsV=CProgramOption::GetArgs();
+      if(lJointsV.size()!=34)
+      {
+        std::cerr << "Joint vector passed has wrong size " << lJointsV.size() << ". Setting to 0" << std::endl;
+        for(int i=0;i<17;++i)
+          for(int a=0;a<3;++a)
+            lSkeleton[i]->SetJointValue(gJointTypes[a],0);
+        for(int i=0;i<16;++i)
+          if(i%4!=0)
+            lCam2PalmRArray[i]=0;
+          else
+            lCam2PalmRArray[i]=1;
+      }
+      else
+      {
+        double lArmWristJoints[6]={0.000,0.000,0.000,2.100,7.102,-3.408};//fixed 
+        unsigned lFingerEquivalence[5]={4,0,1,2,3};
+        
+        for(int a=0;a<2;a++)
+          for(int j=0;j<3;j++)
+            lSkeleton[a]->SetJointValue(gJointTypes[j],lArmWristJoints[a*3+j]);
+        for(int f=0;f<5;++f)
+          for(int a=0;a<3;++a)
+            for(int j=0;j<3;++j)
+            {
+              if(a!=0 && j!=0)
+                lSkeleton[f*3+a+2]->SetJointValue(gJointTypes[j],0.0);
+              else if(a==0)
+                lSkeleton[f*3+a+2]->SetJointValue(gJointTypes[j],asin(stod(lJointsV[lFingerEquivalence[f]*5+j+9]))*180.0/M_PI);
+              else if(a==1)
+                lSkeleton[f*3+a+2]->SetJointValue(gJointTypes[j],asin(stod(lJointsV[lFingerEquivalence[f]*5+3+9]))*180.0/M_PI);
+              else if(a==2)
+                lSkeleton[f*3+a+2]->SetJointValue(gJointTypes[j],asin(stod(lJointsV[lFingerEquivalence[f]*5+4+9]))*180.0/M_PI);
+            }
+            
+        for(int i=0;i<16;++i)
+          lCam2PalmRArray[i]=0;
+        for(int i=0;i<9;++i)
+          lCam2PalmRArray[i+i/3]=stod(lJointsV[i]);
+        lCam2PalmRArray[15]=1;
+        
+        for(int i=0;i<17;++i)
+        {
+          for(int a=0;a<3;++a)
+            std::cout << lSkeleton[i]->GetJointValue(gJointTypes[a]) << " ";
+          std::cout << std::endl;
+        }
+      }
+    }
     
-    
-    //"/home/javier/tmp/objAfterFeedback/objs/adductedThumb_onlyObject.obj"
-    scene::PGeode lGeode=scene::CGeode::Import(pArgs[2],0.1);
+    scene::PGeode lGeode=buola::scene::CGeode::Import(lObjectPath.c_str(),0.1);
     std::cout << pArgs[2] << std::endl;
     std::string lObjectObjPath(pArgs[2]);
     
-    double *lCam2PalmRArray=(lJointsV.size()==34) ? new double[9]{
-      stod(lJointsV[0]),stod(lJointsV[1]),stod(lJointsV[2]),
-      stod(lJointsV[3]),stod(lJointsV[4]),stod(lJointsV[5]),
-      stod(lJointsV[6]),stod(lJointsV[7]),stod(lJointsV[8])} : new double[9]{1,0,0,1,0,0,1,0,0};
-    
-    double *lJointValues=(lJointsV.size()==34)?new double[51]{
-        0.000,0.000,0.000,   // arm, to keep or modify based on Rot matrix (0-8)
-        2.100,7.102,-3.408,  // wrist, to keep
-        asin(stod(lJointsV[29]))*180.0/M_PI,asin(stod(lJointsV[30]))*180.0/M_PI,asin(stod(lJointsV[31]))*180.0/M_PI,
-        asin(stod(lJointsV[32]))*180.0/M_PI,0.0,0.0,
-        asin(stod(lJointsV[33]))*180.0/M_PI,0.0,0.0,
-        asin(stod(lJointsV[9]))*180.0/M_PI,asin(stod(lJointsV[10]))*180.0/M_PI,asin(stod(lJointsV[11]))*180.0/M_PI,
-        asin(stod(lJointsV[12]))*180.0/M_PI,0.0,0.0,
-        asin(stod(lJointsV[13]))*180.0/M_PI,0.0,0.0,
-        asin(stod(lJointsV[14]))*180.0/M_PI,asin(stod(lJointsV[15]))*180.0/M_PI,asin(stod(lJointsV[16]))*180.0/M_PI,
-        asin(stod(lJointsV[17]))*180.0/M_PI,0.0,0.0,
-        asin(stod(lJointsV[18]))*180.0/M_PI,0.0,0.0,
-        asin(stod(lJointsV[19]))*180.0/M_PI,asin(stod(lJointsV[20]))*180.0/M_PI,asin(stod(lJointsV[21]))*180.0/M_PI,
-        asin(stod(lJointsV[22]))*180.0/M_PI,0.0,0.0,
-        asin(stod(lJointsV[23]))*180.0/M_PI,0.0,0.0,
-        asin(stod(lJointsV[24]))*180.0/M_PI,asin(stod(lJointsV[25]))*180.0/M_PI,asin(stod(lJointsV[26]))*180.0/M_PI,
-        asin(stod(lJointsV[27]))*180.0/M_PI,0.0,0.0,
-            asin(stod(lJointsV[28]))*180.0/M_PI,0.0,0.0
-    }:new double[51]{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-    C3DMatrix cam2PalmR=(lJointsV.size()==34)?C3DMatrix(n9Array,lCam2PalmRArray):C3DMatrix();
+    //C3DMatrix cam2PalmR=C3DMatrix(n9Array,lCam2PalmRArray);
+    C3DMatrix cam2PalmR=C3DMatrix(lCam2PalmRArray[0],lCam2PalmRArray[1],lCam2PalmRArray[2],lCam2PalmRArray[3],
+                                  lCam2PalmRArray[4],lCam2PalmRArray[5],lCam2PalmRArray[6],lCam2PalmRArray[7],
+                                  lCam2PalmRArray[8],lCam2PalmRArray[9],lCam2PalmRArray[10],lCam2PalmRArray[11],
+                                  lCam2PalmRArray[12],lCam2PalmRArray[13],lCam2PalmRArray[14],lCam2PalmRArray[15]);
     C3DMatrix palm2CamR = inverse(cam2PalmR);
 
     try
@@ -170,7 +252,6 @@ int main(int pNArg,char **pArgs)
         scene::PScene lScene=new scene::CScene;
         std::vector<CJointSlider*> lSliders;
 
-        CHandSkeleton lSkeleton("/home/javier/scene/rHandP3.obj","/home/javier/scene/hand_texture.ppm");
 
         std::string lSliderNames[2]={"hand","object"};
         std::string lXYZ[3]={"X","Y","Z"};
@@ -186,6 +267,10 @@ int main(int pNArg,char **pArgs)
         std::vector<CCamSlider*> lRotsV;
         buola::C3DRotation lRot;
 
+        if(gPosePathOption.IsSet())
+        {
+          std::cout << "TODO: set lHandTransf and lScene based on the file" << std::endl;
+        }
         lHandTransf->SetTranslation(lHandZero);
         lScene->GetWorld()->AddChild(lHandTransf);
         lHandTransf->AddChild(lSkeleton.GetSkeleton()->GetRoot()->GetTransform());
@@ -207,8 +292,11 @@ int main(int pNArg,char **pArgs)
         }
 
         for(int i=0;i<17;i++)
-            for(int j=0;j<3;j++)
-                addSlider(((i+3)*3+j)*20,gJointTypes[j],lSkeleton[i],&lView,lSliders,lJointValues[i*3+j]);
+          for(int j=0;j<3;j++)
+          {
+//             lSkeleton[i]->SetJointValue(gJointTypes[j],lJointValues[i*3+j]);
+            addSlider(((i+3)*3+j)*20,gJointTypes[j],lSkeleton[i],&lView,lSliders);
+          }
         
         lView.SetCamera(lCamera);
         lView.SetScene(lScene);

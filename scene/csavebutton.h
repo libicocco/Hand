@@ -94,6 +94,8 @@ class CSaveButton
             for(int i=0;i<16;++i)
               lFS << lObjMatrix[i] << " ";
             lFS << std::endl;
+            lFS << "# object path" << std::endl;
+            lFS << mObjectObjPath << std::endl;
             lFS.close();
         }
 };
