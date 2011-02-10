@@ -120,6 +120,14 @@ int main(int pNArg,char **pArgs)
     double *lCam2PalmRArray=new double[16];
     CHandSkeleton lSkeleton("/home/javier/scene/rHandP3.obj","/home/javier/scene/hand_texture.ppm");
 
+    scene::PRTTransform lHandTransf=new scene::CRTTransform;
+    scene::PRTTransform lObjTransf=new scene::CRTTransform;
+    std::vector<scene::PRTTransform> lTransformations;
+    lTransformations.push_back(lHandTransf);
+    lTransformations.push_back(lObjTransf);
+    lHandTransf->SetTranslation(lHandZero);
+    lObjTransf->SetTranslation(lObjZero);
+    
     if(gObjectPathOption.IsSet())
     {
       lObjectPath=gObjectPathOption.GetValue();
@@ -153,28 +161,34 @@ int main(int pNArg,char **pArgs)
       lFS.getline(lLine,gBufSize); // comment
       lFS.getline(lLine,gBufSize); // positions, not required
       lFS.getline(lLine,gBufSize); // comment
-      lFS.getline(lLine,gBufSize); // hand Transform
-      double *lHT=new double[16];
-      std::stringstream lHTSS(lLine);
-      std::copy(std::istream_iterator<double>(lHTSS),
-                std::istream_iterator<double>(),
-                lHT);
+      lFS.getline(lLine,gBufSize); // hand orientation
+      buola::CQuaternion lHandQ;
+      std::stringstream lHandQSS(lLine);
+      lHandQSS >> lHandQ;
       lFS.getline(lLine,gBufSize); // comment
-      lFS.getline(lLine,gBufSize); // obj Transform
-      double *lOT=new double[16];
-      std::stringstream lOTSS(lLine);
-      std::copy(std::istream_iterator<double>(lOTSS),
-                std::istream_iterator<double>(),
-                lOT);
+      lFS.getline(lLine,gBufSize); // hand translation
+      buola::C3DVector lHandT;
+      std::stringstream lHandTSS(lLine);
+      lHandTSS >> lHandT;
+      lHandTransf->SetRotation(lHandQ);
+      lHandTransf->SetTranslation(lHandT);
+      
+      lFS.getline(lLine,gBufSize); // comment
+      lFS.getline(lLine,gBufSize); // obj orientation
+      buola::CQuaternion lObjQ;
+      std::stringstream lObjQSS(lLine);
+      lObjQSS >> lObjQ;
+      lFS.getline(lLine,gBufSize); // comment
+      lFS.getline(lLine,gBufSize); // obj translation
+      buola::C3DVector lObjT;
+      std::stringstream lObjTSS(lLine);
+      lObjTSS >> lObjT;
+      lObjTransf->SetRotation(lObjQ);
+      lObjTransf->SetTranslation(lObjT);
+      
       lFS.getline(lLine,gBufSize); // comment
       lFS.getline(lLine,gBufSize); // obj Transform
       lObjectPath = std::string(lLine);
-//       std::copy(lC,lC+9,std::ostream_iterator<double>(std::cout," "));
-//       std::cout << std::endl;
-//       std::copy(lHT,lHT+16,std::ostream_iterator<double>(std::cout," "));
-//       std::cout << std::endl;
-//       std::copy(lOT,lOT+16,std::ostream_iterator<double>(std::cout," "));
-//       std::cout << std::endl << lOS << std::endl;
     }
     else
     {
@@ -259,11 +273,6 @@ int main(int pNArg,char **pArgs)
         std::string lXYZ[3]={"X","Y","Z"};
         
         std::vector<CPosSlider*> lPosesV;
-        std::vector<scene::PRTTransform> lTransformations;
-        scene::PRTTransform lHandTransf=new scene::CRTTransform;
-        scene::PRTTransform lObjTransf=new scene::CRTTransform;
-        lTransformations.push_back(lHandTransf);
-        lTransformations.push_back(lObjTransf);
         std::vector<buola::C3DVector> lPoses3DV(2);
         
         std::vector<CCamSlider*> lRotsV;
@@ -273,12 +282,10 @@ int main(int pNArg,char **pArgs)
         {
           std::cout << "TODO: set lHandTransf and lScene based on the file" << std::endl;
         }
-        lHandTransf->SetTranslation(lHandZero);
         lScene->GetWorld()->AddChild(lHandTransf);
         lHandTransf->AddChild(lSkeleton.GetSkeleton()->GetRoot()->GetTransform());
         lScene->AddObject(lSkeleton.GetSkeleton());
 
-        lObjTransf->SetTranslation(lObjZero);
         lGeode->AttachTo(lObjTransf);
         lScene->GetWorld()->AddChild(lObjTransf);
 

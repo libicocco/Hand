@@ -84,16 +84,32 @@ class CSaveButton
               lFS << lPose.x << " " << lPose.y << " " << lPose.z << " ";
             }
             lFS << std::endl;
-            lFS << "# hand transform" << std::endl;
-            buola::C3DMatrix lHandMatrix = mHandTransformation->GetWorldTransform();
-            for(int i=0;i<16;++i)
-              lFS << lHandMatrix[i] << " ";
-            lFS << std::endl;
-            lFS << "# object transform" << std::endl;
-            buola::C3DMatrix lObjMatrix = mObjTransformation->GetWorldTransform();
-            for(int i=0;i<16;++i)
-              lFS << lObjMatrix[i] << " ";
-            lFS << std::endl;
+            lFS << " # hand orientation" << std::endl;
+            buola::CQuaternion lHandQ = mHandTransformation->GetRotation();
+//             lFS << lHandQ.w << " " << lHandQ.x << " " << lHandQ.y << " " << lHandQ.z << std::endl;
+            lFS << lHandQ << std::endl;
+            lFS << " # hand position" << std::endl;
+            buola::C3DVector lHandT = mHandTransformation->GetTranslation();
+            //lFS << lHandT.x << " " << lHandT.y << " " << lHandT.z << std::endl;
+            lFS << lHandT << std::endl;
+            lFS << " # obj orientation" << std::endl;
+            buola::CQuaternion lObjQ = mObjTransformation->GetRotation();
+            //lFS << lObjQ.w << " " << lObjQ.x << " " << lObjQ.y << " " << lObjQ.z << std::endl;
+            lFS << lObjQ << std::endl;
+            lFS << " # obj position" << std::endl;
+            buola::C3DVector lObjT = mObjTransformation->GetTranslation();
+            //lFS << lObjT.x << " " << lObjT.y << " " << lObjT.z << std::endl;
+            lFS << lObjT << std::endl;
+//             lFS << "# hand transform" << std::endl;
+//             buola::C3DMatrix lHandMatrix = mHandTransformation->GetWorldTransform();
+//             for(int i=0;i<16;++i)
+//               lFS << lHandMatrix[i] << " ";
+//             lFS << std::endl;
+//             lFS << "# object transform" << std::endl;
+//             buola::C3DMatrix lObjMatrix = mObjTransformation->GetWorldTransform();
+//             for(int i=0;i<16;++i)
+//               lFS << lObjMatrix[i] << " ";
+//             lFS << std::endl;
             lFS << "# object path" << std::endl;
             lFS << mObjectObjPath << std::endl;
             lFS.close();
