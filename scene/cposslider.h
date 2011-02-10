@@ -6,6 +6,8 @@
 #include <buola/gui/cwindow.h>
 #include <buola/geometry/c3dvector.h>
 
+static const unsigned gPosSliderRange=10000;
+
 class CPosSlider
 {
     private:
@@ -31,7 +33,7 @@ class CPosSlider
         inline void OnSlider()
         {
             mPos.*mPosVal=mSliderBox->GetValue();
-            buola::C3DVector lV(mPos/100+mPosZero);
+            buola::C3DVector lV(mPos/gPosSliderRange+mPosZero);
             std::cout << lV << std::endl;
             mTransf->SetTranslation(lV);
             mView->Refresh();

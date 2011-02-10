@@ -6,6 +6,7 @@
 #include <buola/gui/cwindow.h>
 #include <buola/geometry/c3dvector.h>
 
+static const double gCamDistance(0.3);
 class CCamSlider
 {
     private:
@@ -31,7 +32,7 @@ class CCamSlider
             mRot.*mRotVal=mSliderBox->GetValue();
             buola::C3DRotation lV(mRot*M_PI/100.0);
             std::cout << mRot << std::endl;
-            mCam->LookAt(buola::C3DVector(0,0,0),lV,0.5);
+            mCam->LookAt(buola::C3DVector(0,0,0),lV,gCamDistance);
         }
 };
 

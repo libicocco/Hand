@@ -35,7 +35,7 @@ class CSaveButton
             mObjectObjPath(pObjectObjPath),
             mScene(pScene)
         {
-            mButton.Create(dynamic_cast<buola::gui::CWindow*>(pScene),buola::CPoint(200,10),buola::CSize(50,20));
+            mButton.Create(dynamic_cast<buola::gui::CWindow*>(pScene),buola::CPoint(300,10),buola::CSize(50,20));
             //mButton.CreateAndSet(dynamic_cast<buola::gui::CWindow*>(pScene),buola::CPoint(300,300),buola::CSize(100,100),NULL);
             mButton.SetCaption(L"save");
             mButton.ePressed.connect(MEMBER_THIS(OnPressed));
