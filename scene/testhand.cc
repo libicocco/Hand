@@ -193,7 +193,8 @@ int main(int pNArg,char **pArgs)
       }
       else
       {
-        double lArmWristJoints[6]={0.000,0.000,0.000,2.100,7.102,-3.408};//fixed 
+        double lArmWristJoints[6]={0.000,0.000,0.000,
+                                   buola::deg2rad(2.100),buola::deg2rad(7.102),buola::deg2rad(-3.408)};//fixed 
         unsigned lFingerEquivalence[5]={4,0,1,2,3};
         
         for(int a=0;a<2;a++)
@@ -206,11 +207,11 @@ int main(int pNArg,char **pArgs)
               if(a!=0 && j!=0)
                 lSkeleton[f*3+a+2]->SetJointValue(gJointTypes[j],0.0);
               else if(a==0)
-                lSkeleton[f*3+a+2]->SetJointValue(gJointTypes[j],asin(stod(lJointsV[lFingerEquivalence[f]*5+j+9]))*180.0/M_PI);
+                lSkeleton[f*3+a+2]->SetJointValue(gJointTypes[j],asin(stod(lJointsV[lFingerEquivalence[f]*5+j+9])));
               else if(a==1)
-                lSkeleton[f*3+a+2]->SetJointValue(gJointTypes[j],asin(stod(lJointsV[lFingerEquivalence[f]*5+3+9]))*180.0/M_PI);
+                lSkeleton[f*3+a+2]->SetJointValue(gJointTypes[j],asin(stod(lJointsV[lFingerEquivalence[f]*5+3+9])));
               else if(a==2)
-                lSkeleton[f*3+a+2]->SetJointValue(gJointTypes[j],asin(stod(lJointsV[lFingerEquivalence[f]*5+4+9]))*180.0/M_PI);
+                lSkeleton[f*3+a+2]->SetJointValue(gJointTypes[j],asin(stod(lJointsV[lFingerEquivalence[f]*5+4+9])));
             }
             
         for(int i=0;i<16;++i)
@@ -293,10 +294,7 @@ int main(int pNArg,char **pArgs)
 
         for(int i=0;i<17;i++)
           for(int j=0;j<3;j++)
-          {
-//             lSkeleton[i]->SetJointValue(gJointTypes[j],lJointValues[i*3+j]);
             addSlider(((i+3)*3+j)*20,gJointTypes[j],lSkeleton[i],&lView,lSliders);
-          }
         
         lView.SetCamera(lCamera);
         lView.SetScene(lScene);
@@ -304,7 +302,6 @@ int main(int pNArg,char **pArgs)
         CSaveButton lButton(lSkeleton,lHandTransf,lObjTransf,lCamera,lObjectObjPath,&lView);
 
         lView.Show();
-
         lApp.Run();
     }
     catch(std::exception &pE)
