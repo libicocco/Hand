@@ -2,3 +2,7 @@ set(CMAKE_CXX_FLAGS " -O3 -std=gnu++0x -msse -msse2 -msse3 -Wall -Wextra -Winit-
 
 add_executable(testhand testhand.cc)
 target_link_libraries(testhand buolascene buolagui buolafsgui)
+
+add_executable(renderhand renderhand.cc)
+target_link_libraries(renderhand buolascene buolagui buolafsgui)
+
