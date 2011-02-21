@@ -35,12 +35,16 @@ class CSaveButton
             mObjectObjPath(pObjectObjPath),
             mScene(pScene)
         {
+          if(pScene!=NULL)
+          {
             mButton.Create(dynamic_cast<buola::gui::CWindow*>(pScene),buola::CPoint(300,10),buola::CSize(50,20));
             //mButton.CreateAndSet(dynamic_cast<buola::gui::CWindow*>(pScene),buola::CPoint(300,300),buola::CSize(100,100),NULL);
             mButton.SetCaption(L"save");
-            mButton.ePressed.connect(MEMBER_THIS(OnPressed));
+            mButton.ePressed.Connect(&CSaveButton::OnPressed,this);
             mButton.Show();
+          }
         }
+        void setURL(const buola::CURL &pURL){mURL=pURL;}
         inline void OnPressed()
         {
             if(mURL.IsEmpty())
