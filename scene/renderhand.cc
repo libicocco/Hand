@@ -63,7 +63,6 @@ int main(int pNArg,char **pArgs)
   lHandTransf->SetTranslation(lHandZero);
   lObjTransf->SetTranslation(lObjZero);
   
-  std::cout << "setting viewpoints" << std::endl;
   float lYPR[gNumViews*3]={0,0,0,0,0,M_PI/2,0,M_PI/2,0,0,M_PI/2,M_PI/2,M_PI/2,0,0,M_PI/2,0,M_PI/2,M_PI/2,M_PI/2,0,M_PI/2,M_PI/2,M_PI/2};
 //   float *lYPR=new float[gNumViews*3];
 //   static const float gMaxRadious=static_cast<float>(RAND_MAX/2);
@@ -90,18 +89,15 @@ int main(int pNArg,char **pArgs)
       {
         lHOGFS.open(gHOGPathOption.GetValue().c_str());
       }
-      std::cout << "loading pose " << lPosePathV[p] << std::endl;
       loadPose(lPosePathV[p],lSkeleton,lHandTransf,lObjTransf,lObjectPath,lCam2PalmRArray);
       scene::PGeode lGeode=buola::scene::CGeode::Import(lObjectPath.c_str(),0.1);
       
-      std::cout << "setting camera" << std::endl;
       scene::PPerspectiveCamera lCamera=new scene::CPerspectiveCamera;
       lCamera->SetClipping(0.01,200);
       CSaveButton lButton(lSkeleton,lHandTransf,lObjTransf,lCamera,lObjectPath,NULL);
       
       scene::PScene lScene=new scene::CScene;
       
-      std::cout << "setting transf" << std::endl;
       lScene->GetWorld()->AddChild(lHandTransf);
       lHandTransf->AddChild(lSkeleton.GetSkeleton()->GetRoot()->GetTransform());
       lScene->AddObject(lSkeleton.GetSkeleton());
@@ -109,26 +105,19 @@ int main(int pNArg,char **pArgs)
       lGeode->AttachTo(lObjTransf);
       lScene->GetWorld()->AddChild(lObjTransf);
       
-      std::cout << "setting renderer" << std::endl;
       scene::CImageRenderer lRenderer;
       lRenderer.SetScene(lScene);
       lRenderer.SetClearColor(buola::CColor(0,0,0));
       buola::img::CImage_rgb8 lImage({400,400});
-      buola::img::CImage_rgb8 lMask({400,400});
       
-      std::cout << "rendering views" << std::endl;
       Hog<float> lHog;
       for(int i=0;i<gNumViews;++i)
       {
         std::cout << i << std::endl;
-        std::cout << "lookingat" << std::endl;
         lCamera->LookAt(C3DVector(0,0,0),C3DRotation(lYPR[i*3],lYPR[i*3+1],lYPR[i*3+2]),0.25);
         //       std::cout << "Cam view: (" << lYPR[i*3] << "," << lYPR[i*3+1] << "." << lYPR[i*3+2] << ")" << std::endl;
-        std::cout << "set camera" << std::endl;
         lRenderer.SetCamera(lCamera);
-        std::cout << "get image" << std::endl;
         lRenderer.GetImage(mview(lImage));
-        std::cout << "save image" << std::endl;
         std::stringstream lPath;
         lPath << std::setfill('0');
         //lPath << "out/test" << std::setw(3) << p << "_" << std::setw(3) << i << ".pgm";
@@ -152,26 +141,22 @@ int main(int pNArg,char **pArgs)
             std::vector<std::vector<cv::Point> > lContours;
             cv::Mat lTmp = lGrayIm.clone();
             cv::findContours(lTmp, lContours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
-            std::cout << "lcontours " << lContours.size() << std::endl;
             for(int i=0;i<lContours.size();++i)
               lAllContours.insert(lAllContours.end(),lContours[i].begin(),lContours[i].end());
           }
           
           std::cout << lAllContours.size() << std::endl;
-          std::cout << "1" << std::endl;
           cv::Rect lBBox=cv::boundingRect(cv::Mat(lAllContours));
-          std::cout << "2" << std::endl;
           
           std::pair<cv::Mat,cv::Mat> lTstMaskCrop=std::make_pair(lImageCV32F(lBBox),lGrayIm(lBBox));
           std::vector<float> lTstFloat=lHog.compute(lTstMaskCrop,99999999);
           std::copy(lTstFloat.begin(),lTstFloat.end(),std::ostream_iterator<float>(lHOGFS," "));
           lHOGFS << std::endl;
           
-          
-          //         cv::Mat lTstDraw(cv::Size(400,400),CV_8UC1,cv::Scalar(255));
-          //         lHog.draw(lTstDraw);
-          //         cv::imwrite("hog.png",lTstDraw);
-          //         cv::imwrite("mask.png",lGrayIm(lBBox));
+//           cv::Mat lTstDraw(cv::Size(400,400),CV_8UC1,cv::Scalar(255));
+//           lHog.draw(lTstDraw);
+//           cv::imwrite("hog.png",lTstDraw);
+//           cv::imwrite("mask.png",lGrayIm(lBBox));
         }
       }
       if(gHOGPathOption.IsSet())
