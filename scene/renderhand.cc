@@ -1,3 +1,7 @@
+// I have to include hog first
+// because X defines collide with them
+#include "hog.h" // from handclass
+
 #include <stdlib.h>
 #include <cstdlib>
 
@@ -12,7 +16,6 @@
 #include <buola/scene.h>
 #include <buola/scene/csceneview.h>
 #include <buola/scene/ccamera.h>
-#include <buola/app/capp.h>
 #include <buola/scene/cperspectivecamera.h>
 #include <buola/scene/cscene.h>
 #include <buola/scene/cmesh.h>
@@ -23,8 +26,8 @@
 #include <buola/image/io_pgm.h>
 #include <buola/scene/crttransform.h>
 #include <buola/scene/cimagerenderer.h>
+#include <buola/cv/opencv.h>
 
-#include <buola/widgets/cbutton.h>
 #include <buola/app/cprogramoption.h>
 
 #include <buola/geometry/clookatmatrix.h>
@@ -82,6 +85,11 @@ int main(int pNArg,char **pArgs)
   {
     for(int p=0;p<lPosePathV.size();++p)
     {
+      std::ofstream lHOGFS;
+      if(gHOGPathOption.IsSet())
+      {
+        lHOGFS.open(gHOGPathOption.GetValue().c_str());
+      }
       std::cout << "loading pose " << lPosePathV[p] << std::endl;
       loadPose(lPosePathV[p],lSkeleton,lHandTransf,lObjTransf,lObjectPath,lCam2PalmRArray);
       scene::PGeode lGeode=buola::scene::CGeode::Import(lObjectPath.c_str(),0.1);
@@ -106,8 +114,10 @@ int main(int pNArg,char **pArgs)
       lRenderer.SetScene(lScene);
       lRenderer.SetClearColor(buola::CColor(0,0,0));
       buola::img::CImage_rgb8 lImage({400,400});
+      buola::img::CImage_rgb8 lMask({400,400});
       
       std::cout << "rendering views" << std::endl;
+      Hog<float> lHog;
       for(int i=0;i<gNumViews;++i)
       {
         std::cout << i << std::endl;
@@ -127,8 +137,46 @@ int main(int pNArg,char **pArgs)
         lPath.seekp(static_cast<long>(lPath.tellp())-4);
         lPath << ".txt";
         lButton.saveURL(lPath.str());
+        
+        if(gHOGPathOption.IsSet())
+        {
+          cv::Mat lImageCV=cv::Mat(buola::cvi::ipl_wrap(view(lImage)),false);
+          cv::Mat lGrayIm(lImageCV.size(),CV_8UC1);
+          cv::Mat lImageCV32F(lImageCV.size(),CV_32FC3);
+          lImageCV.convertTo(lImageCV32F,CV_32FC3);
+          cv::cvtColor(lImageCV,lGrayIm,CV_BGR2GRAY);
+          cv::threshold(lGrayIm,lGrayIm,1,255,cv::THRESH_BINARY);
+          
+          std::vector<cv::Point> lAllContours;
+          {
+            std::vector<std::vector<cv::Point> > lContours;
+            cv::Mat lTmp = lGrayIm.clone();
+            cv::findContours(lTmp, lContours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+            std::cout << "lcontours " << lContours.size() << std::endl;
+            for(int i=0;i<lContours.size();++i)
+              lAllContours.insert(lAllContours.end(),lContours[i].begin(),lContours[i].end());
+          }
+          
+          std::cout << lAllContours.size() << std::endl;
+          std::cout << "1" << std::endl;
+          cv::Rect lBBox=cv::boundingRect(cv::Mat(lAllContours));
+          std::cout << "2" << std::endl;
+          
+          std::pair<cv::Mat,cv::Mat> lTstMaskCrop=std::make_pair(lImageCV32F(lBBox),lGrayIm(lBBox));
+          std::vector<float> lTstFloat=lHog.compute(lTstMaskCrop,99999999);
+          std::copy(lTstFloat.begin(),lTstFloat.end(),std::ostream_iterator<float>(lHOGFS," "));
+          lHOGFS << std::endl;
+          
+          
+          //         cv::Mat lTstDraw(cv::Size(400,400),CV_8UC1,cv::Scalar(255));
+          //         lHog.draw(lTstDraw);
+          //         cv::imwrite("hog.png",lTstDraw);
+          //         cv::imwrite("mask.png",lGrayIm(lBBox));
+        }
       }
-      lObjTransf->RemoveObject(lGeode);
+      if(gHOGPathOption.IsSet())
+        lHOGFS.close();
+      //lObjTransf->RemoveObject(lGeode);
     }
     //delete []lYPR;
   }
