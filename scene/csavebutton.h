@@ -44,7 +44,7 @@ class CSaveButton
             mButton.Show();
           }
         }
-        void setURL(const buola::CURL &pURL){mURL=pURL;}
+        void saveURL(const buola::CURL &pURL){mURL=pURL;OnPressed();}
         inline void OnPressed()
         {
             if(mURL.IsEmpty())
@@ -81,10 +81,12 @@ class CSaveButton
                     lFS << mSkeleton[j]->GetJointValue(gJointTypes[a]) << " ";
             lFS << std::endl;
             lFS << "# hand wrist and fingertip positions" << std::endl;
-            std::vector<int> lPosesToSave {BONE_FOREARM,BONE_THUMB3,BONE_INDEX3,BONE_MIDDLE3,BONE_RING3,BONE_PINKY3};
+            buola::C3DVector lForearm=mSkeleton[BONE_FOREARM]->GetTransformedEndPoint();
+            std::vector<int> lPosesToSave {BONE_THUMB1,BONE_INDEX1,BONE_MIDDLE1,BONE_RING1,BONE_PINKY1,
+                                           BONE_THUMB3,BONE_INDEX3,BONE_MIDDLE3,BONE_RING3,BONE_PINKY3};
             for(int i=0;i<lPosesToSave.size();++i)
             {
-              buola::C3DVector lPose=mSkeleton[lPosesToSave[i]]->GetTransformedEndPoint();
+              buola::C3DVector lPose=lCamQuat*(mSkeleton[lPosesToSave[i]]->GetTransformedEndPoint()-lForearm);
               lFS << lPose.x << " " << lPose.y << " " << lPose.z << " ";
             }
             lFS << std::endl;

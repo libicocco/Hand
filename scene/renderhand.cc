@@ -38,7 +38,7 @@
 static const buola::C3DVector lHandZero(0.31,-0.57,0.02);
 static const buola::C3DVector lObjZero(0,0,0);
 static const double gCamDistance(0.3);
-static const unsigned gNumViews(1000);
+static const unsigned gNumViews(8);
 
 using namespace buola;
 
@@ -61,27 +61,22 @@ int main(int pNArg,char **pArgs)
   lObjTransf->SetTranslation(lObjZero);
   
   std::cout << "setting viewpoints" << std::endl;
-  float *lYPR=new float[gNumViews*3];
-  //     for(int i=0;i<gNumViews;++i)
-  //     {
-    //       lYPR[i*3]=static_cast<float>(rand())*(2*M_PI/static_cast<float>(RAND_MAX)); //yaw
-  //       lYPR[i*3+1]=static_cast<float>(rand())*(M_PI/static_cast<float>(RAND_MAX)); //pitch
-  //       lYPR[i*3+2]=static_cast<float>(rand())*(2*M_PI/static_cast<float>(RAND_MAX)); // roll
-  //     }
-  static const float gMaxRadious=static_cast<float>(RAND_MAX/2);
-  for(int i=0;i<gNumViews;)
-  {
-    float x=static_cast<float>(rand())-gMaxRadious;
-    float y=static_cast<float>(rand())-gMaxRadious;
-    float z=static_cast<float>(rand())-gMaxRadious;
-    if(x*x+y*y+z*z <= gMaxRadious*gMaxRadious && (x!=0 && y!=0 && z!=0))
-    {
-      lYPR[i*3]=atan2(y,x); // yaw
-      lYPR[i*3+1]=atan2(z,sqrt(x*x+y*y)); //pitch
-      lYPR[i*3+2]=(static_cast<float>(rand())-gMaxRadious)*(2*M_PI/static_cast<float>(RAND_MAX)); // roll
-      ++i;
-    }
-  }
+  float lYPR[gNumViews*3]={0,0,0,0,0,M_PI/2,0,M_PI/2,0,0,M_PI/2,M_PI/2,M_PI/2,0,0,M_PI/2,0,M_PI/2,M_PI/2,M_PI/2,0,M_PI/2,M_PI/2,M_PI/2};
+//   float *lYPR=new float[gNumViews*3];
+//   static const float gMaxRadious=static_cast<float>(RAND_MAX/2);
+//   for(int i=0;i<gNumViews;)
+//   {
+//     float x=static_cast<float>(rand())-gMaxRadious;
+//     float y=static_cast<float>(rand())-gMaxRadious;
+//     float z=static_cast<float>(rand())-gMaxRadious;
+//     if(x*x+y*y+z*z <= gMaxRadious*gMaxRadious && (x!=0 && y!=0 && z!=0))
+//     {
+//       lYPR[i*3]=atan2(y,x); // yaw
+//       lYPR[i*3+1]=atan2(z,sqrt(x*x+y*y)); //pitch
+//       lYPR[i*3+2]=(static_cast<float>(rand())-gMaxRadious)*(2*M_PI/static_cast<float>(RAND_MAX)); // roll
+//       ++i;
+//     }
+//   }
   
   try
   {
@@ -110,7 +105,7 @@ int main(int pNArg,char **pArgs)
       scene::CImageRenderer lRenderer;
       lRenderer.SetScene(lScene);
       lRenderer.SetClearColor(buola::CColor(0,0,0));
-      buola::img::CImage_rgb8 lImage({100,100});
+      buola::img::CImage_rgb8 lImage({400,400});
       
       std::cout << "rendering views" << std::endl;
       for(int i=0;i<gNumViews;++i)
@@ -126,16 +121,16 @@ int main(int pNArg,char **pArgs)
         std::cout << "save image" << std::endl;
         std::stringstream lPath;
         lPath << std::setfill('0');
-        lPath << "out/test" << std::setw(3) << p << "_" << std::setw(3) << i << ".pgm";
+        //lPath << "out/test" << std::setw(3) << p << "_" << std::setw(3) << i << ".pgm";
+        lPath << "out/" << std::setw(3) << p << "_" << std::setw(3) << int(rad2deg(lYPR[i*3])) << "_" << std::setw(3) << int(rad2deg(lYPR[i*3+1])) << "_" << std::setw(3) << int(rad2deg(lYPR[i*3+2])) << ".pgm";
         buola::save_pgm(view(lImage),lPath.str());
         lPath.seekp(static_cast<long>(lPath.tellp())-4);
         lPath << ".txt";
-        lButton.setURL(lPath.str());
-        lButton.OnPressed();
+        lButton.saveURL(lPath.str());
       }
       lObjTransf->RemoveObject(lGeode);
-      delete []lYPR;
     }
+    //delete []lYPR;
   }
   catch(std::exception &pE)
   {
