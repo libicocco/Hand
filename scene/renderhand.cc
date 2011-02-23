@@ -38,10 +38,13 @@
 #include "CHandSkeleton.h"
 #include "loadPose.h"
 
+#include "cDB.h"
+#include "cDBelement.h"
+
 static const buola::C3DVector lHandZero(0.31,-0.57,0.02);
 static const buola::C3DVector lObjZero(0,0,0);
 static const double gCamDistance(0.3);
-static const unsigned gNumViews(1000);
+static const unsigned gNumViews(10);
 
 using namespace buola;
 
@@ -104,6 +107,7 @@ int main(int pNArg,char **pArgs)
   try
   {
     std::ofstream lHOGFS;
+    CDB *lDB=(gDBPathOption.IsSet())?new CDB(gDBPathOption.GetValue()):NULL;
     if(gHOGPathOption.IsSet())
       lHOGFS.open(gHOGPathOption.GetValue().c_str());
     
@@ -177,11 +181,23 @@ int main(int pNArg,char **pArgs)
 //           cv::imwrite("hog.png",lTstDraw);
 //           cv::imwrite("mask.png",lGrayIm(lBBox));
         }
+        if(gDBPathOption.IsSet())
+        {
+          CDBelement lDBelem("1 2 3 4 5 6 7 8 9","1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5",
+                             "1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1",
+                             "1 2 3 4 5",p*gNumViews+i,1,p,"lalin.png");
+          lDB->insertElement(lDBelem);
+        }
       }
       lObjTransf->RemoveObject(lGeode);
     }
     if(gHOGPathOption.IsSet())
       lHOGFS.close();
+    if(gDBPathOption.IsSet())
+    {
+      lDB->finalizeStatement();
+      lDB->prepareQuery();
+    }
     //delete []lYPR;
   }
   catch(std::exception &pE)
