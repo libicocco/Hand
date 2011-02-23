@@ -7,7 +7,3 @@ target_link_libraries(testhand buolascene buolagui buolafsgui boost_system)
 
 add_executable(renderhand renderhand.cc)
 target_link_libraries(renderhand buolascene buolagui buolafsgui buolacv boost_system opencv_highgui)
-
-add_executable(isolated isolated.cc)
-target_link_libraries(isolated buolascene buolagui buolafsgui boost_system)
-

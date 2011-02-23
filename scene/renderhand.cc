@@ -41,7 +41,7 @@
 static const buola::C3DVector lHandZero(0.31,-0.57,0.02);
 static const buola::C3DVector lObjZero(0,0,0);
 static const double gCamDistance(0.3);
-static const unsigned gNumViews(8);
+static const unsigned gNumViews(1000);
 
 using namespace buola;
 
@@ -63,7 +63,28 @@ int main(int pNArg,char **pArgs)
   lHandTransf->SetTranslation(lHandZero);
   lObjTransf->SetTranslation(lObjZero);
   
-  float lYPR[gNumViews*3]={0,0,0,0,0,M_PI/2,0,M_PI/2,0,0,M_PI/2,M_PI/2,M_PI/2,0,0,M_PI/2,0,M_PI/2,M_PI/2,M_PI/2,0,M_PI/2,M_PI/2,M_PI/2};
+  std::pair<C3DVector,C3DVector> *lXYZ=new std::pair<C3DVector,C3DVector>[gNumViews];
+  for(int i=0;i<gNumViews;)
+  {
+    lXYZ[i].first.Set((2*static_cast<float>(rand())/static_cast<float>(RAND_MAX))-1.0,
+                      (2*static_cast<float>(rand())/static_cast<float>(RAND_MAX))-1.0,
+                      (2*static_cast<float>(rand())/static_cast<float>(RAND_MAX))-1.0);
+    if(lXYZ[i].first.Modulus2()<=1 && lXYZ[i].first.Modulus2()!=0)
+    {
+      // strictly speaking lRand should be non-zero and not parallel to lXYZ[i].first
+      C3DVector lRand((2*static_cast<float>(rand())/static_cast<float>(RAND_MAX))-1.0,
+                      (2*static_cast<float>(rand())/static_cast<float>(RAND_MAX))-1.0,
+                      (2*static_cast<float>(rand())/static_cast<float>(RAND_MAX))-1.0);
+//       lXYZ[i].first=normalize(lXYZ[i].first);
+      lXYZ[i].first=lXYZ[i].first*(gCamDistance/lXYZ[i].first.Modulus());
+      lXYZ[i].second=cross_product(lXYZ[i].first,lRand);
+      lXYZ[i].second=normalize(lXYZ[i].second);
+      ++i;
+    }
+  }
+  
+//   float lYPR[gNumViews*3]={0,0,0,0,0,M_PI/2,0,M_PI/2,0,0,M_PI/2,M_PI/2,M_PI/2,0,0,M_PI/2,0,M_PI/2,M_PI/2,M_PI/2,0,M_PI/2,M_PI/2,M_PI/2};
+  
 //   float *lYPR=new float[gNumViews*3];
 //   static const float gMaxRadious=static_cast<float>(RAND_MAX/2);
 //   for(int i=0;i<gNumViews;)
@@ -82,13 +103,12 @@ int main(int pNArg,char **pArgs)
   
   try
   {
+    std::ofstream lHOGFS;
+    if(gHOGPathOption.IsSet())
+      lHOGFS.open(gHOGPathOption.GetValue().c_str());
+    
     for(int p=0;p<lPosePathV.size();++p)
     {
-      std::ofstream lHOGFS;
-      if(gHOGPathOption.IsSet())
-      {
-        lHOGFS.open(gHOGPathOption.GetValue().c_str());
-      }
       loadPose(lPosePathV[p],lSkeleton,lHandTransf,lObjTransf,lObjectPath,lCam2PalmRArray);
       scene::PGeode lGeode=buola::scene::CGeode::Import(lObjectPath.c_str(),0.1);
       
@@ -113,15 +133,15 @@ int main(int pNArg,char **pArgs)
       Hog<float> lHog;
       for(int i=0;i<gNumViews;++i)
       {
-        std::cout << i << std::endl;
-        lCamera->LookAt(C3DVector(0,0,0),C3DRotation(lYPR[i*3],lYPR[i*3+1],lYPR[i*3+2]),0.25);
-        //       std::cout << "Cam view: (" << lYPR[i*3] << "," << lYPR[i*3+1] << "." << lYPR[i*3+2] << ")" << std::endl;
+        //std::cout << i << std::endl;
+//         lCamera->LookAt(C3DVector(0,0,0),C3DRotation(lYPR[i*3],lYPR[i*3+1],lYPR[i*3+2]),0.25);
+        lCamera->LookAt(C3DVector(0,0,0),lXYZ[i].first,lXYZ[i].second);
         lRenderer.SetCamera(lCamera);
         lRenderer.GetImage(mview(lImage));
         std::stringstream lPath;
         lPath << std::setfill('0');
-        //lPath << "out/test" << std::setw(3) << p << "_" << std::setw(3) << i << ".pgm";
-        lPath << "out/" << std::setw(3) << p << "_" << std::setw(3) << int(rad2deg(lYPR[i*3])) << "_" << std::setw(3) << int(rad2deg(lYPR[i*3+1])) << "_" << std::setw(3) << int(rad2deg(lYPR[i*3+2])) << ".pgm";
+        lPath << "out/test" << std::setw(3) << p << "_" << std::setw(3) << i << ".pgm";
+//         lPath << "out/" << std::setw(3) << p << "_" << std::setw(3) << int(rad2deg(lYPR[i*3])) << "_" << std::setw(3) << int(rad2deg(lYPR[i*3+1])) << "_" << std::setw(3) << int(rad2deg(lYPR[i*3+2])) << ".pgm";
         buola::save_pgm(view(lImage),lPath.str());
         lPath.seekp(static_cast<long>(lPath.tellp())-4);
         lPath << ".txt";
@@ -145,7 +165,6 @@ int main(int pNArg,char **pArgs)
               lAllContours.insert(lAllContours.end(),lContours[i].begin(),lContours[i].end());
           }
           
-          std::cout << lAllContours.size() << std::endl;
           cv::Rect lBBox=cv::boundingRect(cv::Mat(lAllContours));
           
           std::pair<cv::Mat,cv::Mat> lTstMaskCrop=std::make_pair(lImageCV32F(lBBox),lGrayIm(lBBox));
@@ -159,10 +178,10 @@ int main(int pNArg,char **pArgs)
 //           cv::imwrite("mask.png",lGrayIm(lBBox));
         }
       }
-      if(gHOGPathOption.IsSet())
-        lHOGFS.close();
-      //lObjTransf->RemoveObject(lGeode);
+      lObjTransf->RemoveObject(lGeode);
     }
+    if(gHOGPathOption.IsSet())
+      lHOGFS.close();
     //delete []lYPR;
   }
   catch(std::exception &pE)
