@@ -106,18 +106,13 @@ class CSaveButton
             buola::C3DVector lObjT = mObjTransformation->GetTranslation();
             //lFS << lObjT.x << " " << lObjT.y << " " << lObjT.z << std::endl;
             lFS << lObjT << std::endl;
-//             lFS << "# hand transform" << std::endl;
-//             buola::C3DMatrix lHandMatrix = mHandTransformation->GetWorldTransform();
-//             for(int i=0;i<16;++i)
-//               lFS << lHandMatrix[i] << " ";
-//             lFS << std::endl;
-//             lFS << "# object transform" << std::endl;
-//             buola::C3DMatrix lObjMatrix = mObjTransformation->GetWorldTransform();
-//             for(int i=0;i<16;++i)
-//               lFS << lObjMatrix[i] << " ";
-//             lFS << std::endl;
             lFS << "# object path" << std::endl;
             lFS << mObjectObjPath << std::endl;
+            // FIXME: write something for the camera that can be read afterwards
+            lFS << "# camera" << std::endl;
+            lFS << "0 0 0 0 -1 0 0 0 1" << std::endl;
+            lFS << "# next indices (dummy for now)" << std::endl;
+            lFS << "1 2 3 4 5" << std::endl;
             lFS.close();
         }
 };

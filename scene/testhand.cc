@@ -1,3 +1,5 @@
+#include "loadPose.h" // conflicts with X
+
 #include <buola/scene.h>
 #include <buola/scene/csceneview.h>
 #include <buola/scene/ccamera.h>
@@ -30,7 +32,6 @@
 #include "cposslider.h"
 #include "ccamslider.h"
 #include "CHandSkeleton.h"
-#include "loadPose.h"
 
 static const buola::C3DVector lHandZero(0.31,-0.57,0.02);
 static const buola::C3DVector lObjZero(0,0,0);

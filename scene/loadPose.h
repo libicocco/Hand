@@ -1,3 +1,8 @@
+#ifndef __LOADPOSE_H
+#define __LOADPOSE_H
+
+#include "cDBelement.h" // conflicts with X
+
 #include <stdlib.h>
 #include <cstdlib>
 
@@ -80,6 +85,44 @@ void setPose(CHandSkeleton &pSkeleton)
       }
 }
 
+void loadPose(const CDBelement &pElem,CHandSkeleton &pSkeleton,scene::PRTTransform &pHandTransf,
+              scene::PRTTransform &pObjTransf,std::string &pObjectPath,double *pCam2PalmRArray)
+{
+  std::stringstream lOriSS(pElem.getOriJoints());
+  std::copy_n(std::istream_iterator<double>(lOriSS),9,pCam2PalmRArray);
+    double *lJointValues=new double[51];
+  std::copy_n(std::istream_iterator<double>(lOriSS),51,lJointValues);
+  for(int i=0;i<17;++i)
+    for(int a=0;a<3;++a)
+      pSkeleton[i]->SetJointValue(gJointTypes[a],lJointValues[i*3+a]);
+  delete []lJointValues;
+  
+  std::stringstream lHandOri(pElem.getHandOri());
+  buola::CQuaternion lHandQ;
+  lHandOri >> lHandQ;
+  std::stringstream lHandPos(pElem.getHandPos());
+  buola::C3DVector lHandT;
+  lHandPos >> lHandQ;
+  pHandTransf->SetRotation(lHandQ);
+  pHandTransf->SetTranslation(lHandT);
+  
+  std::stringstream lObjOri(pElem.getObjOri());
+  buola::CQuaternion lObjQ;
+  lObjOri >> lObjQ;
+  std::stringstream lObjPos(pElem.getObjPos());
+  buola::C3DVector lObjT;
+  lObjPos >> lObjQ;
+  pObjTransf->SetRotation(lObjQ);
+  pObjTransf->SetTranslation(lObjT);
+  pObjectPath=pElem.getObjPath();
+  
+  std::cout << lHandQ << std::endl;
+  std::cout << lHandT << std::endl;
+  std::cout << lObjQ << std::endl;
+  std::cout << lObjT << std::endl;
+  std::cout << pObjectPath << std::endl;
+}
+
 void loadPose(const std::string &pPosePath,CHandSkeleton &pSkeleton,scene::PRTTransform &pHandTransf,
               scene::PRTTransform &pObjTransf,std::string &pObjectPath,double *pCam2PalmRArray)
 {
@@ -137,4 +180,12 @@ void loadPose(const std::string &pPosePath,CHandSkeleton &pSkeleton,scene::PRTTr
     lFS.getline(lLine,gBufSize); // comment
     lFS.getline(lLine,gBufSize); // obj Transform
     pObjectPath = std::string(lLine);
+    
+  std::cout << lHandQ << std::endl;
+  std::cout << lHandT << std::endl;
+  std::cout << lObjQ << std::endl;
+  std::cout << lObjT << std::endl;
+  std::cout << pObjectPath << std::endl;
 }
+
+#endif
