@@ -44,7 +44,7 @@
 static const buola::C3DVector lHandZero(0.31,-0.57,0.02);
 static const buola::C3DVector lObjZero(0,0,0);
 static const double gCamDistance(0.3);
-static const unsigned gNumViews(1);
+static const unsigned gNumViews(10);
 
 using namespace buola;
 
@@ -115,7 +115,7 @@ int main(int pNArg,char **pArgs)
     for(int p=0;p<lPosePathV.size();++p)
     {
       CDBelement lDBelem=lDBtaxonomy.query(p);
-      std::cout << lDBelem << std::endl;
+//       std::cout << lDBelem << std::endl;
 //       loadPose(lPosePathV[p],lSkeleton,lHandTransf,lObjTransf,lObjectPath,lCam2PalmRArray);
       loadPose(lDBelem,lSkeleton,lHandTransf,lObjTransf,lObjectPath,lCam2PalmRArray);
 //       CDBelement lDBelem(lPosePathV[p],p);
@@ -145,14 +145,19 @@ int main(int pNArg,char **pArgs)
       for(int i=0;i<gNumViews;++i)
       {
         //std::cout << i << std::endl;
-//         lCamera->LookAt(C3DVector(0,0,0),C3DRotation(lYPR[i*3],lYPR[i*3+1],lYPR[i*3+2]),0.25);
-        lCamera->LookAt(C3DVector(0,0,0),lXYZ[i].first,lXYZ[i].second);
+        //         lCamera->LookAt(C3DVector(0,0,0),C3DRotation(lYPR[i*3],lYPR[i*3+1],lYPR[i*3+2]),0.25);
+        
+        C3DVector lAt(0,0,0);
+        C3DVector lFrom(lXYZ[i].first);
+        C3DVector lUp(lXYZ[i].second);
+        lCamera->LookAt(lAt,lFrom,lUp);
+        
         lRenderer.SetCamera(lCamera);
         lRenderer.GetImage(mview(lImage));
         std::stringstream lPath;
         lPath << std::setfill('0');
         lPath << "out/test" << std::setw(3) << p << "_" << std::setw(3) << i << ".pgm";
-//         lPath << "out/" << std::setw(3) << p << "_" << std::setw(3) << int(rad2deg(lYPR[i*3])) << "_" << std::setw(3) << int(rad2deg(lYPR[i*3+1])) << "_" << std::setw(3) << int(rad2deg(lYPR[i*3+2])) << ".pgm";
+        //         lPath << "out/" << std::setw(3) << p << "_" << std::setw(3) << int(rad2deg(lYPR[i*3])) << "_" << std::setw(3) << int(rad2deg(lYPR[i*3+1])) << "_" << std::setw(3) << int(rad2deg(lYPR[i*3+2])) << ".pgm";
         buola::save_pgm(view(lImage),lPath.str());
         lPath.seekp(static_cast<long>(lPath.tellp())-4);
         lPath << ".txt";
@@ -182,30 +187,12 @@ int main(int pNArg,char **pArgs)
           std::vector<float> lTstFloat=lHog.compute(lTstMaskCrop,99999999);
           std::copy(lTstFloat.begin(),lTstFloat.end(),std::ostream_iterator<float>(lHOGFS," "));
           lHOGFS << std::endl;
-          
-//           cv::Mat lTstDraw(cv::Size(400,400),CV_8UC1,cv::Scalar(255));
-//           lHog.draw(lTstDraw);
-//           cv::imwrite("hog.png",lTstDraw);
-//           cv::imwrite("mask.png",lGrayIm(lBBox));
         }
         if(gDBPathOption.IsSet())
         {
-             //           CDBelement lDBelem("1 2 3 4 5 6 7 8 9","1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5",
-             //                              "1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1",
-             //                              "1 2 3 4 5",p*gNumViews+i,1,p,"lalin.png");
-             CDBelement lDBelem("-0.679865 0.712723 -0.172655 -0.683015 -0.701123 -0.204737 -0.266973 -0.021268 0.963469",
-                        "0 0 0 0.0349066 0.122173 -0.0523599 -0.0523599 0.471239 0.0872665 0 0 0 0.366519 0 0 0.802851 0 0 -0.244346 0 0 -0.244346 0 0 -0.139626 0 0 0 0 0 0 0 0 -0.453786 0 0 -0.349066 0 0 -0.0523599 0 0 -0.366519 0 0 -0.506145 0 0 0 0 0",
-                        "0.014051 0.0021309 0.0202811 0.0253984 -0.0218033 0.0260408 0.0289943 -0.0368846 0.0163251 0.0301756 -0.0360599 0.00704167 0.0322638 -0.02724 -0.00163937 0.0343952 0.00527745 0.03079 0.0433962 -0.01762 0.0325037 0.0480978 -0.0344598 0.0253616 0.0450017 -0.0444789 0.014692 0.0426206 -0.0376911 0.00409682",
-                        p*gNumViews+i,
-                        "/home/javier/hand/scene/out/test000_000.txt",
-                        "(1 0 0 0)",
-                        "(0.3267,-0.5481,0.0076)",
-                        "(1 0 0 0)",
-                        "(0,0,0)",
-                        "/home/javier/tmp/objAfterFeedback/objs/inferiorPincerGrasp_onlyObject.obj",
-                        "0 0 0 0 -1 0 0 0 1",
-                        "1 2 3 4 5");
-             lDB->insertElement(lDBelem);
+          lDBelem.setCamAtFromUp(lAt,lFrom,lUp);
+          lDBelem.setIndex(p*gNumViews+i);
+          lDB->insertElement(lDBelem);
         }
       }
       lObjTransf->RemoveObject(lGeode);
@@ -218,7 +205,7 @@ int main(int pNArg,char **pArgs)
 //       lDB->prepareQuery();
 //      delete lDB;
     }
-    lDBtaxonomy.finalizeStatement();
+//     lDBtaxonomy.finalizeStatement();
   }
   catch(std::exception &pE)
   {

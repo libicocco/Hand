@@ -89,9 +89,12 @@ void loadPose(const CDBelement &pElem,CHandSkeleton &pSkeleton,scene::PRTTransfo
               scene::PRTTransform &pObjTransf,std::string &pObjectPath,double *pCam2PalmRArray)
 {
   std::stringstream lOriSS(pElem.getOriJoints());
-  std::copy_n(std::istream_iterator<double>(lOriSS),9,pCam2PalmRArray);
-    double *lJointValues=new double[51];
-  std::copy_n(std::istream_iterator<double>(lOriSS),51,lJointValues);
+  for(int i=0;i<9;++i)
+    lOriSS >> pCam2PalmRArray[i];
+  
+  double *lJointValues=new double[51];
+  for(int i=0;i<51;++i)
+    lOriSS >> lJointValues[i];
   for(int i=0;i<17;++i)
     for(int a=0;a<3;++a)
       pSkeleton[i]->SetJointValue(gJointTypes[a],lJointValues[i*3+a]);
@@ -102,7 +105,7 @@ void loadPose(const CDBelement &pElem,CHandSkeleton &pSkeleton,scene::PRTTransfo
   lHandOri >> lHandQ;
   std::stringstream lHandPos(pElem.getHandPos());
   buola::C3DVector lHandT;
-  lHandPos >> lHandQ;
+  lHandPos >> lHandT;
   pHandTransf->SetRotation(lHandQ);
   pHandTransf->SetTranslation(lHandT);
   
@@ -111,81 +114,67 @@ void loadPose(const CDBelement &pElem,CHandSkeleton &pSkeleton,scene::PRTTransfo
   lObjOri >> lObjQ;
   std::stringstream lObjPos(pElem.getObjPos());
   buola::C3DVector lObjT;
-  lObjPos >> lObjQ;
+  lObjPos >> lObjT;
   pObjTransf->SetRotation(lObjQ);
   pObjTransf->SetTranslation(lObjT);
   pObjectPath=pElem.getObjPath();
-  
-  std::cout << lHandQ << std::endl;
-  std::cout << lHandT << std::endl;
-  std::cout << lObjQ << std::endl;
-  std::cout << lObjT << std::endl;
-  std::cout << pObjectPath << std::endl;
 }
 
 void loadPose(const std::string &pPosePath,CHandSkeleton &pSkeleton,scene::PRTTransform &pHandTransf,
               scene::PRTTransform &pObjTransf,std::string &pObjectPath,double *pCam2PalmRArray)
 {
-    std::ifstream lFS(pPosePath.c_str());
-    char lLine[gBufSize];
-    lFS.getline(lLine,gBufSize); // comment
-    lFS.getline(lLine,gBufSize); // cam
-    std::stringstream lOriSS(lLine);
-    std::copy(std::istream_iterator<double>(lOriSS),
-              std::istream_iterator<double>(),
-              pCam2PalmRArray);
-    
-    lFS.getline(lLine,gBufSize); // comment
-    lFS.getline(lLine,gBufSize); // joints
-    std::stringstream lJointsSS(lLine);
-    double *lJointValues=new double[51];
-    std::copy(std::istream_iterator<double>(lJointsSS),
-              std::istream_iterator<double>(),
-              lJointValues);
-    for(int i=0;i<17;++i)
-      for(int a=0;a<3;++a)
-        pSkeleton[i]->SetJointValue(gJointTypes[a],lJointValues[i*3+a]);
-    //std::copy(lJointValues,lJointValues+51,std::ostream_iterator<double>(std::cout," "));
-    //std::cout << std::endl;
-    delete []lJointValues;
-    
-    lFS.getline(lLine,gBufSize); // comment
-    lFS.getline(lLine,gBufSize); // positions, not required for loading
-    lFS.getline(lLine,gBufSize); // comment
-    lFS.getline(lLine,gBufSize); // hand orientation
-    buola::CQuaternion lHandQ;
-    std::stringstream lHandQSS(lLine);
-    lHandQSS >> lHandQ;
-    lFS.getline(lLine,gBufSize); // comment
-    lFS.getline(lLine,gBufSize); // hand translation
-    buola::C3DVector lHandT;
-    std::stringstream lHandTSS(lLine);
-    lHandTSS >> lHandT;
-    pHandTransf->SetRotation(lHandQ);
-    pHandTransf->SetTranslation(lHandT);
-    
-    lFS.getline(lLine,gBufSize); // comment
-    lFS.getline(lLine,gBufSize); // obj orientation
-    buola::CQuaternion lObjQ;
-    std::stringstream lObjQSS(lLine);
-    lObjQSS >> lObjQ;
-    lFS.getline(lLine,gBufSize); // comment
-    lFS.getline(lLine,gBufSize); // obj translation
-    buola::C3DVector lObjT;
-    std::stringstream lObjTSS(lLine);
-    lObjTSS >> lObjT;
-    pObjTransf->SetRotation(lObjQ);
-    pObjTransf->SetTranslation(lObjT);
-    
-    lFS.getline(lLine,gBufSize); // comment
-    lFS.getline(lLine,gBufSize); // obj Transform
-    pObjectPath = std::string(lLine);
-    
-  std::cout << lHandQ << std::endl;
-  std::cout << lHandT << std::endl;
-  std::cout << lObjQ << std::endl;
-  std::cout << lObjT << std::endl;
-  std::cout << pObjectPath << std::endl;
+  std::ifstream lFS(pPosePath.c_str());
+  char lLine[gBufSize];
+  lFS.getline(lLine,gBufSize); // comment
+  lFS.getline(lLine,gBufSize); // cam
+  std::stringstream lOriSS(lLine);
+  std::copy(std::istream_iterator<double>(lOriSS),
+            std::istream_iterator<double>(),
+            pCam2PalmRArray);
+  
+  lFS.getline(lLine,gBufSize); // comment
+  lFS.getline(lLine,gBufSize); // joints
+  std::stringstream lJointsSS(lLine);
+  double *lJointValues=new double[51];
+  std::copy(std::istream_iterator<double>(lJointsSS),
+            std::istream_iterator<double>(),
+            lJointValues);
+  for(int i=0;i<17;++i)
+    for(int a=0;a<3;++a)
+      pSkeleton[i]->SetJointValue(gJointTypes[a],lJointValues[i*3+a]);
+  delete []lJointValues;
+  
+  lFS.getline(lLine,gBufSize); // comment
+  lFS.getline(lLine,gBufSize); // positions, not required for loading
+  lFS.getline(lLine,gBufSize); // comment
+  lFS.getline(lLine,gBufSize); // hand orientation
+  buola::CQuaternion lHandQ;
+  std::stringstream lHandQSS(lLine);
+  lHandQSS >> lHandQ;
+  lFS.getline(lLine,gBufSize); // comment
+  lFS.getline(lLine,gBufSize); // hand translation
+  buola::C3DVector lHandT;
+  std::stringstream lHandTSS(lLine);
+  lHandTSS >> lHandT;
+  pHandTransf->SetRotation(lHandQ);
+  pHandTransf->SetTranslation(lHandT);
+  
+  lFS.getline(lLine,gBufSize); // comment
+  lFS.getline(lLine,gBufSize); // obj orientation
+  buola::CQuaternion lObjQ;
+  std::stringstream lObjQSS(lLine);
+  lObjQSS >> lObjQ;
+  lFS.getline(lLine,gBufSize); // comment
+  lFS.getline(lLine,gBufSize); // obj translation
+  buola::C3DVector lObjT;
+  std::stringstream lObjTSS(lLine);
+  lObjTSS >> lObjT;
+  pObjTransf->SetRotation(lObjQ);
+  pObjTransf->SetTranslation(lObjT);
+  
+  lFS.getline(lLine,gBufSize); // comment
+  lFS.getline(lLine,gBufSize); // obj Transform
+  pObjectPath = std::string(lLine);
 }
 
 #endif
