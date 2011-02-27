@@ -128,7 +128,9 @@ int main(int pNArg,char **pArgs)
       std::stringstream lPoseFolder;
       lPoseFolder << std::setfill('0');
       lPoseFolder << "out/" << std::setw(3) << p;
-      fsystem::create_directory(lPoseFolder.str());
+      fsystem::path lFolderPath(fsystem::initial_path());
+      lFolderPath/=lPoseFolder.str();
+      fsystem::create_directory(lFolderPath);
       for(int f=0;f<gNFrames;++f)
       {
         tFullPoseV lFullPoseInterp=((gNFrames-(f+1))*lRestPose+(f+1)*lFullPose)/gNFrames;
@@ -160,7 +162,7 @@ int main(int pNArg,char **pArgs)
           std::stringstream lPoseName;
           lPoseName << std::setfill('0');
           lPoseName << std::setw(3) << f << "_" << std::setw(3) << i << ".pgm";
-          fsystem::path lPosePath(lPoseFolder.str());
+          fsystem::path lPosePath(lFolderPath);
           lPosePath/=lPoseName.str();
           //         lPath << "out/" << std::setw(3) << p << "_" << std::setw(3) << int(rad2deg(lYPR[i*3])) << "_" << std::setw(3) << int(rad2deg(lYPR[i*3+1])) << "_" << std::setw(3) << int(rad2deg(lYPR[i*3+2])) << ".pgm";
           buola::save_pgm(view(lImage),lPosePath.string());
@@ -197,6 +199,7 @@ int main(int pNArg,char **pArgs)
           if(gDBPathOption.IsSet())
           {
             lDBelem.setCamAtFromUp(lAt,lFrom,lUp);
+            lDBelem.setImagePath(lPosePath.string());
             lDBelem.setIndex(p*(gNumViews*gNFrames)+f*gNumViews+i);
             if(gHOGPathOption.IsSet())
               lDBelem.setFeature(lFeature);
