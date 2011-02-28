@@ -10,6 +10,34 @@
 #include <algorithm>
 #include "CHandSkeleton.h"
 
+const std::string getCam2PalmR(const CHandSkeleton &pSkeleton,const buola::scene::PPerspectiveCamera &pCamera)
+{
+  std::ostringstream lS;
+  buola::CQuaternion lHandQuat(pSkeleton[BONE_FOREARM]->GetTransform()->GetWorldTransform());
+  buola::CQuaternion lCamQuat(pCamera->GetLookAtMatrix());
+  // order still unclear
+  buola::CQuaternion lHandCamQuat=conj(lCamQuat)*lHandQuat;
+  buola::C3DMatrix lHandCamMat(buola::nRotate,lHandCamQuat);
+  for(int i=0;i<3;++i)
+    for(int j=0;j<3;++j)
+      lS << lHandCamMat(i,j) << " ";
+  return lS.str();
+}
+const std::string partsLocation2String(const CHandSkeleton &pSkeleton,const buola::scene::PPerspectiveCamera &pCamera)
+{
+  std::ostringstream lS;
+  buola::C3DVector lForearm=pSkeleton[BONE_FOREARM]->GetTransformedEndPoint();
+  std::vector<int> lPosesToSave {BONE_THUMB1,BONE_INDEX1,BONE_MIDDLE1,BONE_RING1,BONE_PINKY1,
+                                 BONE_THUMB3,BONE_INDEX3,BONE_MIDDLE3,BONE_RING3,BONE_PINKY3};
+  buola::CQuaternion lCamQuat(pCamera->GetLookAtMatrix());
+  for(int i=0;i<lPosesToSave.size();++i)
+  {
+    buola::C3DVector lPose=lCamQuat*(pSkeleton[lPosesToSave[i]]->GetTransformedEndPoint()-lForearm);
+    lS << lPose.x << " " << lPose.y << " " << lPose.z << " ";
+  }
+  return lS.str();
+}
+
 class CSaveButton
 {
     private:
@@ -64,32 +92,16 @@ class CSaveButton
                     return ;
             }
 
-            buola::CQuaternion lHandQuat(mSkeleton[BONE_FOREARM]->GetTransform()->GetWorldTransform());
-            buola::CQuaternion lCamQuat(mCamera->GetLookAtMatrix());
-            // order still unclear
-            buola::CQuaternion lHandCamQuat=conj(lCamQuat)*lHandQuat;
-            buola::C3DMatrix lHandCamMat(buola::nRotate,lHandCamQuat);
             std::ofstream lFS(mURL.GetFullPath().c_str());
             lFS << "# hand orientation with respect to the camera" << std::endl;
-            for(int i=0;i<3;++i)
-                for(int j=0;j<3;++j)
-                    lFS << lHandCamMat(i,j) << " ";
-            lFS << std::endl;
+            lFS << getCam2PalmR(mSkeleton,mCamera) << std::endl;
             lFS << "# hand joints (51)" << std::endl;
             for(int j=0;j<17;++j)
                 for(int a=0;a<3;++a)
                     lFS << mSkeleton[j]->GetJointValue(gJointTypes[a]) << " ";
             lFS << std::endl;
-            lFS << "# hand wrist and fingertip positions" << std::endl;
-            buola::C3DVector lForearm=mSkeleton[BONE_FOREARM]->GetTransformedEndPoint();
-            std::vector<int> lPosesToSave {BONE_THUMB1,BONE_INDEX1,BONE_MIDDLE1,BONE_RING1,BONE_PINKY1,
-                                           BONE_THUMB3,BONE_INDEX3,BONE_MIDDLE3,BONE_RING3,BONE_PINKY3};
-            for(int i=0;i<lPosesToSave.size();++i)
-            {
-              buola::C3DVector lPose=lCamQuat*(mSkeleton[lPosesToSave[i]]->GetTransformedEndPoint()-lForearm);
-              lFS << lPose.x << " " << lPose.y << " " << lPose.z << " ";
-            }
-            lFS << std::endl;
+            lFS << "# fingerbases and tips positions" << std::endl;
+            lFS << partsLocation2String(mSkeleton,mCamera) << std::endl;
             lFS << " # hand orientation" << std::endl;
             buola::CQuaternion lHandQ = mHandTransformation->GetRotation();
 //             lFS << lHandQ.w << " " << lHandQ.x << " " << lHandQ.y << " " << lHandQ.z << std::endl;

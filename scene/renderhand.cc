@@ -198,6 +198,12 @@ int main(int pNArg,char **pArgs)
           }
           if(gDBPathOption.IsSet())
           {
+//             for(int e=0;e<9;++e)
+//               std::cout << lCam2PalmRArray[e] << " ";
+//             std::cout << std::endl;
+            lDBelem.setOri(getCam2PalmR(lSkeleton,lCamera));
+            
+            lDBelem.setPartsLocation(partsLocation2String(lSkeleton,lCamera));
             lDBelem.setCamAtFromUp(lAt,lFrom,lUp);
             lDBelem.setImagePath(lPosePath.string());
             lDBelem.setIndex(p*(gNumViews*gNFrames)+f*gNumViews+i);
