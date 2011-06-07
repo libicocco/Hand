@@ -206,7 +206,7 @@ class CHandSkeleton
         mMesh->CalcNormals();
         mMesh->SmoothNormals();
         img::CImage_rgb8 lTexImage;
-        load_pgm(lTexImage,pTexturePath);
+        load(lTexImage,pTexturePath);
         mMesh->SetTexture(lTexImage);
         mSkeleton->Prepare(mMesh);
 

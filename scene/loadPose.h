@@ -25,7 +25,7 @@
 #include <buola/scene/cbone.h>
 #include <buola/scene/cgeode.h>
 #include <buola/image/format.h>
-#include <buola/image/io_pgm.h>
+#include <buola/image/io.h>
 #include <buola/scene/crttransform.h>
 #include <buola/scene/cimagerenderer.h>
 

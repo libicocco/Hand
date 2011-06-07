@@ -1,5 +1,6 @@
 // I have to include hog first
 // because X defines collide with them
+#include <buola/image/algorithm/detail/opencv.h>
 #include "hog.h" // from handclass
 
 #include <stdlib.h>
@@ -23,10 +24,9 @@
 #include <buola/scene/cbone.h>
 #include <buola/scene/cgeode.h>
 #include <buola/image/format.h>
-#include <buola/image/io_pgm.h>
+#include <buola/image/io.h>
 #include <buola/scene/crttransform.h>
 #include <buola/scene/cimagerenderer.h>
-#include <buola/cv/opencv.h>
 
 #include <buola/app/cprogramoption.h>
 
@@ -158,21 +158,21 @@ int main(int pNArg,char **pArgs)
           lCamera->LookAt(lAt,lFrom,lUp);
           
           lRenderer.SetCamera(lCamera);
-          lRenderer.GetImage(mview(lImage));
+          lRenderer.GetImage(lImage);
           std::stringstream lPoseName;
           lPoseName << std::setfill('0');
           lPoseName << std::setw(3) << f << "_" << std::setw(3) << i << ".pgm";
           fsystem::path lPosePath(lFolderPath);
           lPosePath/=lPoseName.str();
           //         lPath << "out/" << std::setw(3) << p << "_" << std::setw(3) << int(rad2deg(lYPR[i*3])) << "_" << std::setw(3) << int(rad2deg(lYPR[i*3+1])) << "_" << std::setw(3) << int(rad2deg(lYPR[i*3+2])) << ".pgm";
-          buola::save_pgm(view(lImage),lPosePath.string());
+          save(lImage,lPosePath.string());
 //           lPath.seekp(static_cast<long>(lPath.tellp())-4);
 //           lPath << ".txt";
 //           lButton.saveURL(lPath.str());
           
           if(gHOGPathOption.IsSet())
           {
-            cv::Mat lImageCV=cv::Mat(buola::cvi::ipl_wrap(view(lImage)),false);
+            cv::Mat lImageCV=cv::Mat(buola::img::ipl_wrap(lImage),false);
             cv::Mat lGrayIm(lImageCV.size(),CV_8UC1);
             cv::Mat lImageCV32F(lImageCV.size(),CV_32FC3);
             lImageCV.convertTo(lImageCV32F,CV_32FC3);
