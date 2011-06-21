@@ -13,4 +13,4 @@
  # obj position
 (-0.0115,-0.057,-0.0001)
 # object path
-/home/javier/tmp/objAfterFeedback/objs/precisionDisk_onlyObject.obj
+/usr/local/src/Hand/scene/objects/precisionDisk_onlyObject.obj

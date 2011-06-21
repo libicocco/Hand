@@ -13,4 +13,4 @@
  # obj position
 (0,0,0)
 # object path
-/home/javier/tmp/objAfterFeedback/objs/lateral_onlyObject.obj
+/usr/local/src/Hand/scene/objects/lateral_onlyObject.obj

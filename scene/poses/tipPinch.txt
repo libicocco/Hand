@@ -13,4 +13,4 @@
  # obj position
 (0,0,0.0101)
 # object path
-/home/javier/tmp/objAfterFeedback/objs/tipPinch_onlyObject.obj
+/usr/local/src/Hand/scene/objects/tipPinch_onlyObject.obj

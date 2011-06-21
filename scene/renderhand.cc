@@ -56,11 +56,11 @@ int main(int pNArg,char **pArgs)
   srand(time(NULL));
   buola_init(pNArg,pArgs);
   
-  std::string lObjectPath("/home/javier/tmp/objAfterFeedback/objs/adductedThumb_onlyObject.obj");
+  std::string lObjectPath("/usr/local/src/Hand/scene/objects/adductedThumb_onlyObject.obj");
   std::string lPosePath;
   
   double *lCam2PalmRArray=new double[9];
-  CHandSkeleton lSkeleton("/home/javier/scene/rHandP3.obj","/home/javier/scene/hand_texture.ppm");
+  CHandSkeleton lSkeleton("/usr/local/src/Hand/scene/rHandP3.obj","/usr/local/src/Hand/scene/hand_texture.ppm");
   
   scene::PRTTransform lHandTransf=new scene::CRTTransform;
   scene::PRTTransform lObjTransf=new scene::CRTTransform;
@@ -92,7 +92,6 @@ int main(int pNArg,char **pArgs)
     std::ofstream lHOGFS;
     CDB *lDB=(gDBPathOption.IsSet())?new CDB(gDBPathOption.GetValue()):NULL;
     CDB lDBtaxonomy("taxonomy.db");
-//     CDB lDBtaxonomy("hands.db");
     std::vector<float> lFeature;
     if(gHOGPathOption.IsSet())
       lHOGFS.open(gHOGPathOption.GetValue().c_str());

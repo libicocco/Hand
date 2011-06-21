@@ -13,4 +13,4 @@
  # obj position
 (-0.0107,-0.0133,0)
 # object path
-/home/javier/tmp/objAfterFeedback/objs/mediumWrap_onlyObject.obj
+/usr/local/src/Hand/scene/objects/mediumWrap_onlyObject.obj

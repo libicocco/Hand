@@ -13,4 +13,4 @@
  # obj position
 (0.0041,-0.0255,-0.0227)
 # object path
-/home/javier/tmp/objAfterFeedback/objs/parallelExtension_onlyObject.obj
+/usr/local/src/Hand/scene/objects/parallelExtension_onlyObject.obj

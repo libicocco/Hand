@@ -13,4 +13,4 @@
  # obj position
 (0.0137,-0.0006,0)
 # object path
-/home/javier/tmp/objAfterFeedback/objs/powerDisk_onlyObject.obj
+/usr/local/src/Hand/scene/objects/powerDisk_onlyObject.obj

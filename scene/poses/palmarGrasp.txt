@@ -13,4 +13,4 @@
  # obj position
 (-0.0049,-0.0725,0)
 # object path
-/home/javier/tmp/objAfterFeedback/objs/palmarGrasp_onlyObject.obj
+/usr/local/src/Hand/scene/objects/palmarGrasp_onlyObject.obj

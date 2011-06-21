@@ -13,4 +13,4 @@
  # obj position
 (-0.0144,-0.0174,-0.0021)
 # object path
-/home/javier/tmp/objAfterFeedback/objs/powerSphere_onlyObject.obj
+/usr/local/src/Hand/scene/objects/powerSphere_onlyObject.obj

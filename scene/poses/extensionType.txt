@@ -13,4 +13,4 @@
  # obj position
 (0,-0.058,-0.0003)
 # object path
-/home/javier/tmp/objAfterFeedback/objs/extensionType_onlyObject.obj
+/usr/local/src/Hand/scene/objects/extensionType_onlyObject.obj
