@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 set(CMAKE_CXX_FLAGS " -O3 -g -std=gnu++0x -msse -msse2 -msse3 -Wall -Wextra -Winit-self -Wpointer-arith -Wno-sign-compare -Wcast-qual -Wno-unused-parameter -Wno-uninitialized -Wno-missing-field-initializers -Wnon-virtual-dtor -Woverloaded-virtual -Wsign-promo ${CMAKE_CXX_FLAGS}")
-set(HANDCLASS_ROOT /usr/local/src/Hand/handclass/branches/refactoring)
+set(HANDCLASS_ROOT /usr/local/src/Hand/handpose)
 include_directories(${HANDCLASS_ROOT}/include /usr/local/include/eigen3)
 link_directories(${HANDCLASS_ROOT}/build/src)
 
