@@ -38,6 +38,8 @@ include_directories (${CMAKE_SOURCE_DIR}/include
     ${SOURCES_DIR_LSHKIT}/include
     ${SOURCES_DIR_FIGTREE}/include)
 
+link_directories(${SOURCES_DIR_FIGTREE}/lib)
+
 add_subdirectory(${SOURCES_DIR_FIGTREE})
 add_subdirectory(${SOURCES_DIR_LSHKIT})
 add_subdirectory(src)
