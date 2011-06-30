@@ -32,7 +32,7 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 #include <buola/utility/usignal.h>
 #include <buola/geometry.h>
 
-#define OLDDB
+//#define OLDDB
 
 #ifdef OLDDB
 static char sPragmas[]=
