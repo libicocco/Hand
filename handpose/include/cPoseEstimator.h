@@ -191,10 +191,8 @@ public:
                      //double lMeanError=lMeanErrorV.sum()/(NORI+NJOINTS);
                      //double lVarError=lVarErrorV.sum()/(NORI+NJOINTS);
                      //std::cout << "(mean,var,weighted mean) = " << lMeanError << " \t" <<  lVarError << " \t" <<  lWeightedMeanError << std::endl;
-                     double lMeanError=mProcFeat->getMeanError()/(NORI+NJOINTS);
-                     double lVarError=mProcFeat->getVarError()/(NORI+NJOINTS);
-                     std::cout << "(mean,var) = " << lMeanError << " \t" <<  lVarError << std::endl;
-                     exit(1);
+                     std::cout << "(mean,var) = " << getMeanError() << " \t" <<  getVarError() << std::endl;
+                     return false;
                    }
                    else
                    {
@@ -221,6 +219,9 @@ public:
                      return true;
                    }
                  }
+                 
+                 float getMeanError() const{return mProcFeat->getMeanError()/(NORI+NJOINTS);}
+                 float getVarError() const{return mProcFeat->getVarError()/(NORI+NJOINTS);}
                  
                  /** If there are images, it shows them */
                  void DoExpose()

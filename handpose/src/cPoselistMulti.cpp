@@ -48,8 +48,8 @@ void CPoselistMulti::saveBestPoses()
         delete [] mBestWeights;
       }
       mNFinalNeighbors = mPoseList.size();
-      mBestOri = new double[mNFinalNeighbors*(NORI)];
-      mBestJoints = new double[mNFinalNeighbors*(mDimMetric)];
+      mBestOri = new double[mNFinalNeighbors*NORI];
+      mBestJoints = new double[mNFinalNeighbors*mDimMetric];
       mBestWeights = new double[mNFinalNeighbors];
     }
     
@@ -61,6 +61,7 @@ void CPoselistMulti::saveBestPoses()
     {
       tPoseV lPose(itr->getPose());
       unsigned lMetricIndex = itr->getIndex()/NVIEWS;
+      std::cout << itr->getIndex() << " ";
       for(int i=0;i<NORI;++i)
         lBestOri[i]=lPose[i];
       for(int i=0;i<mDimMetric;++i)
@@ -68,11 +69,12 @@ void CPoselistMulti::saveBestPoses()
           lBestJoints[i]=lPose[i+NORI];
         else
           lBestJoints[i]=mMetric[lMetricIndex*mDimMetric+i];
-      lBestOri+=(NORI);
-      lBestJoints+=(mDimMetric);
+      lBestOri+=NORI;
+      lBestJoints+=mDimMetric;
       *lBestWeights=itr->getWeight();
       lBestWeights++;
     }
+    std::cout << std::endl;
     // normalize mBestWeights
     double totalWeight=0;
     for(int i=0;i<mNFinalNeighbors;i++)
@@ -93,14 +95,15 @@ void CPoselistMulti::setWeights()
   if(mNFinalNeighbors!=0 && mUseTemporalLikelihood)
   {
     double *lOriWeights = new double[mPoseList.size()];
-    double *lOri = new double[mPoseList.size()*(NORI)];
+    double *lOri = new double[mPoseList.size()*NORI];
     double *lJointWeights = new double[mPoseList.size()];
-    double *lJoints = new double[mPoseList.size()*(mDimMetric)];
+    double *lJoints = new double[mPoseList.size()*mDimMetric];
     double *lTmpOri = lOri; /**< lOri holds a copy of the oris, since figtree needs them in array mode*/
     double *lTmpJoints = lJoints; /**< lJoints hold a copy of the joints, since figtree needs them in array mode*/
     std::vector<tAcc_Var> lPosesVar(mDimMetric+NORI);
     for (itr=mPoseList.begin();itr!=mPoseList.end();++itr)
     {
+      std::cout << itr->getIndex() << " ";
       tPoseV lPose(itr->getPose());
       unsigned lMetricIndex = itr->getIndex()/NVIEWS;
       for(int i=0;i<NORI;++i)
@@ -115,9 +118,11 @@ void CPoselistMulti::setWeights()
           lTmpJoints[i]=lPose[NORI+i];
         else
           lTmpJoints[i]=mMetric[lMetricIndex*mDimMetric+i];
-        lPosesVar[i](lTmpJoints[NORI+i]);
+        lPosesVar[NORI+i](lTmpJoints[i]);
       }
+      lTmpJoints+=mDimMetric;
     }
+    std::cout << std::endl;
     
     double lVarPoseOri = 0;
     double lVarPoseJoints = 0;
@@ -135,16 +140,23 @@ void CPoselistMulti::setWeights()
      * neighbors contribute to the variance (a lot) and are not related to the final 
      * distribution
      */
-    double lBWOri = sqrt(2*lVarPoseOri)/mNFinalNeighbors; // FIXME
-    double lBWJoints = sqrt(2*lVarPoseJoints)/mNFinalNeighbors; // FIXME
+    
+      
+    double lBWOri = 20*sqrt(2*lVarPoseOri)/mNFinalNeighbors; // FIXME
+    double lBWJoints = 20*sqrt(2*lVarPoseJoints)/mNFinalNeighbors; // FIXME
+    
     
     figtree( NORI, mNFinalNeighbors, mPoseList.size(), 1, mBestOri, lBWOri, 
-             mBestWeights, lOri, 1e-2, lOriWeights, FIGTREE_EVAL_IFGT_TREE, FIGTREE_PARAM_NON_UNIFORM, 1 );
+             mBestWeights, lOri, 1e-2, lOriWeights);//, FIGTREE_EVAL_IFGT_TREE, FIGTREE_PARAM_NON_UNIFORM, 1 );
+    
     figtree( mDimMetric, mNFinalNeighbors, mPoseList.size(), 1, mBestJoints, lBWJoints, 
-             mBestWeights, lJoints, 1e-2, lJointWeights, FIGTREE_EVAL_IFGT_TREE, FIGTREE_PARAM_NON_UNIFORM, 1 );
+             mBestWeights, lJoints, 1e-2, lJointWeights);//, FIGTREE_EVAL_IFGT_TREE, FIGTREE_PARAM_NON_UNIFORM, 1 );
+    
+    for(int i=0;i<mPoseList.size();++i)
+      std::cout << lJointWeights[i] << "," << lOriWeights[i] << std::endl;
     
     // summing both weights into lJointWeights, just to avoid allocating a new array
-    for(int i=0;i<mNFinalNeighbors;++i)
+    for(int i=0;i<mPoseList.size();++i)
       lJointWeights[i] += lOriWeights[i];
     
     int i=0;
@@ -168,5 +180,5 @@ void CPoselistMulti::setWeights()
       itr->setPoseW(0,lSumPoseW);
     }
   }
-  NormalizeWeights(acc::sum(lSumFeatW),acc::sum(lSumPoseW));
+  NormalizeWeights(acc::sum(lSumFeatW),acc::sum(lSumPoseW),0.9);
 }

@@ -131,7 +131,7 @@ public:
     //std::cout << "nn results: " << lLNearn.front().first << ": " << lLNearn.front().second << std::endl;
     // get weighted posed lWPose based on lLNearn nearest neighbors
     tPoseV lWPose = mPoselist->interpolatePoses(lLNearn);
-    std::cout << *mPoselist << std::endl;
+    //std::cout << *mPoselist << std::endl;
     // if there's an expected pose pExpectedPose (there's ground truth)
     // compute the error and accumulate it in mErrorAcc
     accumulateError(pExpectedPose,lWPose,mErrorAccV,mErrorAcc);

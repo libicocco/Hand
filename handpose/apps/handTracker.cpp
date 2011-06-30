@@ -33,7 +33,7 @@ int main(int argc,char* argv[])
 {
   std::string lDBPath,lFeatPath,lTestFolder,lTestPattern,lMetricPath;
   unsigned lNNN,lDBsize,lFeatDim,lDimMetric;
-  bool lTemporalSmoothing;
+  bool lTemporalSmoothing,lGUI;
   // Declare the supported options.
   po::options_description desc("Allowed options");
   desc.add_options()
@@ -48,6 +48,7 @@ int main(int argc,char* argv[])
     ("temporal", po::value<bool>(&lTemporalSmoothing)->default_value(true), "Should the temporal likelihood be used?")
     ("dimMetric", po::value<unsigned>(&lDimMetric)->default_value(0), "Dimensionality of the joint metric used")
     ("metric", po::value<std::string>(&lMetricPath)->default_value(""), "Matrix with features for different joint configurations (nnn x dimMetric)")
+    ("gui", po::value<bool>(&lGUI)->default_value(false), "Should the results be shown in a GUI?")
     ;
   
   po::variables_map vm;
@@ -68,6 +69,6 @@ int main(int argc,char* argv[])
   Hog<float> lHog;
   Feature<float> *lFeat=&lHog;
   
-  CPoseEstimator<CPoselistMulti,float> lTrackerHogExact(lFeat,&lProcFeat,lTestFolder,lTestPattern,true);
+  CPoseEstimator<CPoselistMulti,float> lTrackerHogExact(lFeat,&lProcFeat,lTestFolder,lTestPattern,lGUI);
   lTrackerHogExact.Run();
 }
