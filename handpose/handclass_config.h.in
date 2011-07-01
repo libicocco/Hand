@@ -9,6 +9,7 @@ static const char *FLANNINDEXPATH="@FLANN_INDEX_PATH@";
 static const char *LSHBINPATH="@LSH_BIN_PATH@";
 static const char *LSHINDEXPATH="@LSH_INDEX_PATH@";
 static const char *DBPATH="@DB_PATH@";
+static const char *SCENEPATH="@SCENE_PATH@";
 #cmakedefine CAM_ACCESS
 
 #endif

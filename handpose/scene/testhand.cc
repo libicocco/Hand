@@ -40,6 +40,8 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 #include <buola/geometry/c3dvector.h>
 #include <buola/geometry/cperspectiveprojectionmatrix.h>
 
+#include "handclass_config.h"
+
 #include <sstream>
 #include <iterator>
 #include <algorithm>
@@ -134,11 +136,17 @@ int main(int pNArg,char **pArgs)
 {
     buola_init(pNArg,pArgs);
     
-    std::string lObjectPath("/usr/local/src/Hand/scene/objects/adductedThumb_onlyObject.obj");
-    std::string lPosePath;
+    fsystem::path lObjectPathFS(SCENEPATH);
+    lObjectPathFS/="objects/adductedThumb_onlyObject.obj";
+    std::string lObjectPath = lObjectPathFS.string();
+    
+    fsystem::path lObjPathFS(SCENEPATH);
+    lObjPathFS/="rHandP3.obj";
+    fsystem::path lTexturePathFS(SCENEPATH);
+    lTexturePathFS/="hand_texture.ppm";
     
     double *lCam2PalmRArray=new double[16];
-    CHandSkeleton lSkeleton("/usr/local/src/Hand/scene/rHandP3.obj","/usr/local/src/Hand/scene/hand_texture.ppm");
+    CHandSkeleton lSkeleton(lObjPathFS.string().c_str(),lTexturePathFS.string().c_str());
 
     scene::PRTTransform lHandTransf=new scene::CRTTransform;
     scene::PRTTransform lObjTransf=new scene::CRTTransform;

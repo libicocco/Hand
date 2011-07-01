@@ -1,5 +1,5 @@
 add_executable(testhand testhand.cc)
-target_link_libraries(testhand buolascene buolagui buolafsgui boost_system)
+target_link_libraries(testhand buolascene buolagui buolafsgui boost_system boost_filesystem)
 
 add_executable(renderhand renderhand.cc)
 target_link_libraries(renderhand buolascene buolagui buolafsgui buolacv boost_system boost_filesystem

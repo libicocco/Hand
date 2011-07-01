@@ -10,6 +10,7 @@ set(CMAKE_CXX_FLAGS " -O0 -g -std=c++0x -msse -msse2 -msse3 -Wall -Wextra -Winit
 set (SOURCES_DIR_LSHKIT ${CMAKE_SOURCE_DIR}/3rdparty/lshkit-0.2.1)
 set (SOURCES_DIR_ANN ${CMAKE_SOURCE_DIR}/3rdparty/ann_1.1.2)
 set (SOURCES_DIR_FIGTREE ${CMAKE_SOURCE_DIR}/3rdparty/figtree-0.9.3)
+set (SCENE_PATH ${CMAKE_SOURCE_DIR}/scene)
 
 set(DATA_BASEPATH ${CMAKE_SOURCE_DIR} CACHE STRING "")
 
