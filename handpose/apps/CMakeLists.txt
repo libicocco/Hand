@@ -12,3 +12,6 @@ target_link_libraries(handTracker boost_regex boost_filesystem boost_system boos
 
 add_executable(createFeatDB createFeatDB.cpp) 
 target_link_libraries(createFeatDB boost_system boost_filesystem boost_regex handclass sqlite3 ${GSL_LIBRARIES} lshkit ${OPENCV_LDFLAGS})
+
+add_executable(createRenderDB createRenderDB.cpp) 
+target_link_libraries(createRenderDB boost_system boost_filesystem boost_regex handclass sqlite3 ${GSL_LIBRARIES} lshkit ${OPENCV_LDFLAGS})

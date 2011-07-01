@@ -67,7 +67,7 @@ static const unsigned gNFrames(5);
 static const buola::C3DVector lHandZero(0.31,-0.57,0.02);
 static const buola::C3DVector lObjZero(0,0,0);
 static const double gCamDistance(0.3);
-static const unsigned gNumViews(1000);
+static const unsigned gNumViews(10);
 
 using namespace buola;
 
