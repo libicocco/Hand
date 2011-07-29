@@ -124,9 +124,7 @@ int main(int pNArg,char **pArgs)
     if(cmd_line().IsSet(gHOGPathOption))
       lHOGFS.open(cmd_line().GetValue(gHOGPathOption).c_str());
     
-    CDBelement lDBelemRest=lDBtaxonomy.query(0);
-    tFullPoseV lRestPose;
-    lDBelemRest.getFullPose(lRestPose);
+    tFullPoseV lRestPose = tFullPoseV::Zero();
     Hog<float> lHog;
     unsigned lFeatSize=lHog.getFeatSize();
     float *lFeatureA=new float[lFeatSize*31*gNFrames*gNumViews];
@@ -134,7 +132,7 @@ int main(int pNArg,char **pArgs)
 //     for(int p=0;p<lPosePathV.size();++p)
     for(int p=0;p<31;++p)
     {
-      CDBelement lDBelem=lDBtaxonomy.query(p+1); // skipping rest pose
+      CDBelement lDBelem=lDBtaxonomy.query(p);
       //       std::cout << lDBelem << std::endl;
       //       loadPose(lPosePathV[p],lSkeleton,lHandTransf,lObjTransf,lObjectPath,lCam2PalmRArray);
       //       CDBelement lDBelem(lPosePathV[p],p);
