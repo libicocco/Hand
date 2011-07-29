@@ -34,7 +34,7 @@ class CPosSlider
         buola::gui::CSliderBox  *mSliderBox;
         buola::C3DVector &mPos;
         double buola::C3DVector::*mPosVal;
-        boost::intrusive_ptr<buola::scene::CRTTransform> mTransf;
+        buola::intrusive_ptr<buola::scene::CRTTransform> mTransf;
         buola::C3DVector mPosZero;
         buola::scene::CSceneView *mView;
 
@@ -42,7 +42,7 @@ class CPosSlider
         CPosSlider(buola::gui::CSliderBox *pSliderBox,
                 buola::C3DVector &pPos,
                 double buola::C3DVector::*pPosVal,
-                boost::intrusive_ptr<buola::scene::CRTTransform> pTransf,
+                buola::intrusive_ptr<buola::scene::CRTTransform> pTransf,
                 buola::scene::CSceneView *pView):
             mSliderBox(pSliderBox),
             mPos(pPos),

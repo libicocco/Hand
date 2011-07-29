@@ -88,7 +88,7 @@ void addCamSlider(int y,scene::CSceneView *pScene,std::vector<CCamSlider*> &pRot
 }
 
 void addXYZSlider(int y,scene::CSceneView *pScene,std::vector<CPosSlider*> &pPoses,C3DVector &pV,
-        double buola::C3DVector::*pPosVal,const std::string &pCaption,boost::intrusive_ptr<buola::scene::CRTTransform> pTransf)
+        double buola::C3DVector::*pPosVal,const std::string &pCaption,buola::intrusive_ptr<buola::scene::CRTTransform> pTransf)
 {
     gui::CLabelBox *lLabel=new gui::CLabelBox;
 	lLabel->Create(dynamic_cast<gui::CWindow*>(pScene),CPoint(0,y),CSize(gSliderWidth,gSliderHeight));
