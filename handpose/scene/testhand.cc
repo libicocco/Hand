@@ -34,7 +34,7 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 #include <buola/scene/crttransform.h>
 
 #include <buola/widgets/cbutton.h>
-#include <buola/app/cprogramoption.h>
+#include <buola/app/ccmdline.h>
 
 #include <buola/geometry/clookatmatrix.h>
 #include <buola/geometry/c3dvector.h>

@@ -50,7 +50,7 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 #include <buola/scene/cimagerenderer.h>
 
 #include <buola/widgets/cbutton.h>
-#include <buola/app/cprogramoption.h>
+#include <buola/app/ccmdline.h>
 
 #include <buola/geometry/clookatmatrix.h>
 #include <buola/geometry/c3dvector.h>
@@ -60,16 +60,16 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 
 using namespace buola;
 
-static buola::CTypedProgramOption<std::string> gObjectPathOption("objpath",'o',L"Path to object .obj file");
-static buola::CTypedProgramOption<std::string> gPosePathOption("posepath",'p',L"Path to pose file");
-static buola::CTypedProgramOption<std::string> gHOGPathOption("hogpath",'h',L"Path to hog file to be saved");
-static buola::CTypedProgramOption<std::string> gDBPathOption("db",'d',L"Path to db file to be saved");
+static buola::CCmdLineOption<std::string> gObjectPathOption("objpath",'o',L"Path to object .obj file");
+static buola::CCmdLineOption<std::string> gPosePathOption("posepath",'p',L"Path to pose file");
+static buola::CCmdLineOption<std::string> gHOGPathOption("hogpath",'h',L"Path to hog file to be saved");
+static buola::CCmdLineOption<std::string> gDBPathOption("db",'d',L"Path to db file to be saved");
 
 static const unsigned gBufSize(1024);
 
 void setPose(CHandSkeleton &pSkeleton)
 {
-    const std::vector<std::string> &lJointsV=CProgramOption::GetArgs();
+    const std::vector<std::string> &lJointsV=cmd_line().GetArgs();
     // if the array doesn't have all the 9+5*(3+2) values, set the joints to zero
     if(lJointsV.size()!=34)
     {

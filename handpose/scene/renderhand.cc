@@ -48,7 +48,7 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 #include <buola/scene/crttransform.h>
 #include <buola/scene/cimagerenderer.h>
 
-#include <buola/app/cprogramoption.h>
+#include <buola/app/ccmdline.h>
 
 #include <buola/geometry/clookatmatrix.h>
 #include <buola/geometry/c3dvector.h>
@@ -73,7 +73,7 @@ using namespace buola;
 
 int main(int pNArg,char **pArgs)
 {
-//   const std::vector<std::string> &lPosePathV=CProgramOption::GetArgs();
+//   const std::vector<std::string> &lPosePathV=cmd_line()GetArgs();
   
   srand(time(NULL));
   buola_init(pNArg,pArgs);
