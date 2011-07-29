@@ -119,7 +119,9 @@ int main(int pNArg,char **pArgs)
   {
     std::ofstream lHOGFS;
     CDB *lDB=(cmd_line().IsSet(gDBPathOption))?new CDB(cmd_line().GetValue(gDBPathOption)):NULL;
-    CDB lDBtaxonomy("taxonomy.db");
+    fsystem::path lBasicRenderDbFS(SCENEPATH);
+    lBasicRenderDbFS/="taxonomy.db";
+    CDB lDBtaxonomy(lBasicRenderDbFS);
     std::vector<float> lFeature;
     if(cmd_line().IsSet(gHOGPathOption))
       lHOGFS.open(cmd_line().GetValue(gHOGPathOption).c_str());
