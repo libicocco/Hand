@@ -157,11 +157,11 @@ int main(int pNArg,char **pArgs)
     lObjTransf->SetTranslation(lObjZero);
     
     // if they specify an object .obj
-    if(gObjectPathOption.IsSet())
-      lObjectPath=gObjectPathOption.GetValue();
+    if(cmd_line().IsSet(gObjectPathOption))
+      lObjectPath=cmd_line().GetValue(gObjectPathOption);
     // if they specify a pose file
-    if(gPosePathOption.IsSet())
-      loadPose(gPosePathOption.GetValue(),lSkeleton,lHandTransf,lObjTransf,lObjectPath,lCam2PalmRArray);
+    if(cmd_line().IsSet(gPosePathOption))
+      loadPose(cmd_line().GetValue(gPosePathOption),lSkeleton,lHandTransf,lObjTransf,lObjectPath,lCam2PalmRArray);
     else
       setPose(lSkeleton);
     
