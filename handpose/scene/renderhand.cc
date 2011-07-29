@@ -118,11 +118,11 @@ int main(int pNArg,char **pArgs)
   try
   {
     std::ofstream lHOGFS;
-    CDB *lDB=(gDBPathOption.IsSet())?new CDB(gDBPathOption.GetValue()):NULL;
+    CDB *lDB=(cmd_line().IsSet(gDBPathOption))?new CDB(cmd_line().GetValue(gDBPathOption)):NULL;
     CDB lDBtaxonomy("taxonomy.db");
     std::vector<float> lFeature;
-    if(gHOGPathOption.IsSet())
-      lHOGFS.open(gHOGPathOption.GetValue().c_str());
+    if(cmd_line().IsSet(gHOGPathOption))
+      lHOGFS.open(cmd_line().GetValue(gHOGPathOption).c_str());
     
     CDBelement lDBelemRest=lDBtaxonomy.query(0);
     tFullPoseV lRestPose;
@@ -197,7 +197,7 @@ int main(int pNArg,char **pArgs)
 //           lPath << ".txt";
 //           lButton.saveURL(lPath.str());
           
-          if(gHOGPathOption.IsSet())
+          if(cmd_line().IsSet(gHOGPathOption))
           {
             cv::Mat lImageCV=cv::Mat(buola::img::ipl_wrap(lImage),false);
             cv::Mat lGrayIm(lImageCV.size(),CV_8UC1);
@@ -223,7 +223,7 @@ int main(int pNArg,char **pArgs)
 //             std::copy(lFeature.begin(),lFeature.end(),std::ostream_iterator<float>(lHOGFS," "));
 //             lHOGFS << std::endl;
           }
-          if(gDBPathOption.IsSet())
+          if(cmd_line().IsSet(gDBPathOption))
           {
 //             for(int e=0;e<9;++e)
 //               std::cout << lCam2PalmRArray[e] << " ";
@@ -234,7 +234,7 @@ int main(int pNArg,char **pArgs)
             lDBelem.setCamAtFromUp(lAt,lFrom,lUp);
             lDBelem.setImagePath(lPosePath.string());
             lDBelem.setIndex(p*(gNumViews*gNFrames)+f*gNumViews+i);
-            if(gHOGPathOption.IsSet())
+            if(cmd_line().IsSet(gHOGPathOption))
               lDBelem.setFeature(lFeature);
             lDB->insertElement(lDBelem);
           }
@@ -242,12 +242,12 @@ int main(int pNArg,char **pArgs)
       lObjTransf->RemoveObject(lGeode);
       }
     }
-    if(gHOGPathOption.IsSet())
+    if(cmd_line().IsSet(gHOGPathOption))
     {
       lHOGFS.write(reinterpret_cast<char*>(lFeatureA),lFeatSize*31*gNFrames*gNumViews*sizeof(float));
       lHOGFS.close();
     }
-    if(gDBPathOption.IsSet())
+    if(cmd_line().IsSet(gDBPathOption))
     {
       lDB->finalizeStatement();
       //      delete lDB;
