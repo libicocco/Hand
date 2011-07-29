@@ -65,6 +65,7 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 
 static const unsigned gNFrames(5);
 static const buola::C3DVector lHandZero(0.31,-0.57,0.02);
+static const buola::C3DVector lHandRest(0.31,-0.5,0.02);
 static const buola::C3DVector lObjZero(0,0,0);
 static const double gCamDistance(0.3);
 static const unsigned gNumViews(10);
@@ -163,6 +164,8 @@ int main(int pNArg,char **pArgs)
         tFullPoseV lFullPoseInterp=((gNFrames-(f+1))*lRestPose+(f+1)*lFullPose)/gNFrames;
         lDBelem.setFullPose(lFullPoseInterp);
         loadPose(lDBelem,lSkeleton,lHandTransf,lObjTransf,lObjectPath,lCam2PalmRArray);
+
+        lHandTransf->SetTranslation(((gNFrames-(f+1))*lHandRest+(f+1)*lHandTransf->GetTranslation())/gNFrames);
         
         lScene->GetWorld()->AddChild(lHandTransf);
         lHandTransf->AddChild(lSkeleton.GetSkeleton()->GetRoot()->GetTransform());
@@ -214,6 +217,13 @@ int main(int pNArg,char **pArgs)
               for(int i=0;i<lContours.size();++i)
                 lAllContours.insert(lAllContours.end(),lContours[i].begin(),lContours[i].end());
             }
+
+	    if(lAllContours.empty())
+	    {
+              std::cerr << "There is no hand in the figure" << std::endl << 
+                "Run it again (to randomize the view point) or change the rendering parameters" << std::endl;
+              exit(1);
+	    }
             
             cv::Rect lBBox=cv::boundingRect(cv::Mat(lAllContours));
             
