@@ -29,8 +29,6 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 #include "cDBregisterQuery.h"
 #include "cDBregisterInsert.h"
 #include "boost/filesystem.hpp"
-#include <buola/utility/usignal.h>
-#include <buola/geometry.h>
 
 //#define OLDDB
 
@@ -412,16 +410,18 @@ public:
   const std::string& getCamAt() const{return mCamAt;}
   const std::string& getCamFrom() const{return mCamFrom;}
   const std::string& getCamUp() const{return mCamUp;}
-  void setCamAtFromUp(const buola::C3DVector& pAt,const buola::C3DVector& pFrom,const buola::C3DVector& pUp)
+  void setCamAtFromUp(double pAtx,double pAty,double pAtz,
+                      double pFromx,double pFromy,double pFromz,
+                      double pUpx,double pUpy,double pUpz)
   {
     std::ostringstream lAtS;
-    lAtS << pAt;
+    lAtS << pAtx << pAty << pAtz;
     mCamAt=lAtS.str();
     std::ostringstream lFromS;
-    lFromS << pFrom;
+    lFromS << pFromx << pFromy << pFromz;
     mCamFrom=lFromS.str();
     std::ostringstream lUpS;
-    lUpS << pUp;
+    lUpS << pUpx << pUpy << pUpz;
     mCamUp=lUpS.str();
   }
   const std::vector<float>& getFeature() const{return mFeature;}

@@ -18,22 +18,6 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
     along with Hand.  If not, see <http://www.gnu.org/licenses/>.
 
 **********************************************/
-/*
- * =====================================================================================
- * 
- *       Filename:  feature.h
- * 
- *    Description:  Class of different visual features to test * 
- *        Version:  1.0
- *        Created:  05/28/2010 02:34:46 PM CEST
- *       Revision:  none
- *       Compiler:  gcc
- * 
- *         Author:  Javier Romero (jrgn), jrgn@kth.se
- *        Company:  CAS/CSC KTH
- * 
- * =====================================================================================
- */
 
 #ifndef FEATUREH
 #define FEATUREH

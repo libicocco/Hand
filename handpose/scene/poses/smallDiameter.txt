@@ -13,4 +13,4 @@
  # obj position
 (-0.0055,-0.0065,0)
 # object path
-/usr/local/src/Hand/scene/objects/smallDiameter_onlyObject.obj
+/home/balin/javier/Hand/handpose/scene/objects/smallDiameter_onlyObject.obj

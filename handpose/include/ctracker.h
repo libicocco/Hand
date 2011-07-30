@@ -24,7 +24,6 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 #include <vector>
 #include <map>
 #include <opencv2/core/core.hpp>
-#include <buola/geometry.h>
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/io.hpp>
 #include <iostream>
@@ -91,42 +90,6 @@ inline double dist (cv::Rect &r1, const cv::Rect &r2)
   return lDist;
 }
 
-/** Computes the distance between two rectangles.
- * If they intersect, 0<=d<1.
- * @brief Computes the distance between two rectangles.
- * 
- * @param r1 First rectangle
- * @param r2 Second rectangle
- * 
- * @return Distance 
- */
-template<>
-inline double dist (buola::CRect &r1, const buola::CRect &r2)
-{
-  double lDist;
-  if(r1.DoesIntersect(r2))
-  {
-	double lIntersection = r1.GetIntersectionArea(r2);
-    lDist = 1 - lIntersection*lIntersection/(r1.Area()*r2.Area());
-  }
-  else
-  {
-    buola::CPoint c1 = r1.GetCenter();
-    buola::CPoint c2 = r2.GetCenter();
-    double d1 = c1.GetDist(r1.TopLeft());
-    double d2 = c2.GetDist(r2.TopLeft());
-    double a1 = r1.Area();
-    double a2 = r2.Area();
-    double sizeRatio;
-    if(a1>a2)
-      sizeRatio = a1/a2;
-    else
-      sizeRatio = a2/a1;
-    lDist = (c1.GetDist(c2)/(d1+d2))*sqrt(sizeRatio);
-  }
-  return lDist;
-}
-
 /** 
  * @brief Class that tracks any CShape (for example, rectangles).
  */
@@ -164,7 +127,6 @@ class CTracker
       for(unsigned int i=0;i<maxtag;i++)
       {
         lTmp = CTrackable<CShape,CAnyPoint> (pActual[i],pActual[i],CAnyPoint(0,0),1);
-        //lTmp = CTrackable<CShape,CAnyPoint> (pActual[i],pActual[i],buola::CPoint(0,0),1);
         mTrackedSet.insert(std::pair<unsigned int,CTrackable<CShape,CAnyPoint> >(i+1,lTmp));
       }
     }
@@ -298,7 +260,7 @@ class CTracker
       else
       {
         maxtag++;
-        CTrackable<CShape,CAnyPoint> lTmp = CTrackable<CShape,CAnyPoint>(*lItrA,*lItrA,buola::CPoint(0,0));
+        CTrackable<CShape,CAnyPoint> lTmp = CTrackable<CShape,CAnyPoint>(*lItrA,*lItrA,cv::point(0,0));
         mTrackedSet.insert(std::pair<unsigned int,CTrackable<CShape,CAnyPoint> >(maxtag,lTmp));
       }
         */
@@ -309,7 +271,6 @@ class CTracker
       {
         maxtag++;
         CTrackable<CShape,CAnyPoint> lTmp(pActual[pos],pActual[pos],CAnyPoint(0,0));
-        //CTrackable<CShape,CAnyPoint> lTmp(pActual[pos],pActual[pos],buola::CPoint(0,0));
         mTrackedSet.insert(std::pair<unsigned int,CTrackable<CShape,CAnyPoint> >(maxtag,lTmp));
       }
     }

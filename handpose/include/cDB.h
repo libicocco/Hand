@@ -47,7 +47,6 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 #include "constants.h"
 #include "typeDefinitions.h"
 #include "cDBelement.h"
-#include <buola/image/ccolorspaceconversion.h>
 
 namespace fsystem=boost::filesystem;
 

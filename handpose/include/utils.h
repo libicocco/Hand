@@ -26,7 +26,6 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 #include <string>
 #include <queue>
 #include "opencv2/core/core.hpp"
-#include <buola/image.h>
 #include "ctrackable.h"
 #include "constants.h"
 #include "typeDefinitions.h"
@@ -75,41 +74,4 @@ void rejectSmallBlobs(std::vector<int> &pBlobSizes, std::vector<CAnyPoint> &pBlo
   }
 }
 
-template <typename CAnyView>
-void overlay(CAnyView pView,std::map<unsigned int,CTrackable<buola::CRect,buola::CPoint> >::const_iterator pBegin,std::map<unsigned int,CTrackable<buola::CRect,buola::CPoint> >::const_iterator pEnd)
-{
-  std::map<unsigned int,CTrackable<buola::CRect,buola::CPoint> >::const_iterator itrmap;
-  for(itrmap=pBegin;itrmap!=pEnd;++itrmap)
-  {
-    buola::CRect lRect = (itrmap->second).getReal();
-    CAnyView lSubView = subimage_view(pView,(int)lRect.l,(int)lRect.t,(int)lRect.w(),(int)lRect.h());
-    for(int y=0;y<lSubView.height();++y)
-    {
-      typename CAnyView::x_iterator it=lSubView.row_begin(y);
-      for(int x=0;x<lSubView.width();++x)
-      {
-        if(x>lSubView.width()/2-5 && x<lSubView.width()/2+5 &&  y>lSubView.height()/2 -5 && y<lSubView.height()/2+5)
-        {
-          it[x][0]=(unsigned char)100;
-          it[x][1]=(unsigned char)100;
-          it[x][2]=(unsigned char)100;
-          it[x][(itrmap->first)%3]=(unsigned char)(10*itrmap->first);
-        }
-        else
-        {
-          //int shade = ((itrmap->second).TIMEOUT-(int)(itrmap->second).getAge())*15;
-          int shade = (7-(int)(itrmap->second).getAge())*15;
-          for(int c=0;c<3;c++)
-            it[x][c]=(unsigned char)(std::min(255,it[x][c]+shade));
-        }
-      }
-    }
-  }
-}
-
-template <typename CAnyView>
-void overlay(CAnyView pView,const std::map<unsigned int,CTrackable<buola::CRect,buola::CPoint> > &pMap)
-{
-  overlay(pView,pMap.begin(),pMap.end());
-}
 #endif

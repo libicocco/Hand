@@ -13,4 +13,4 @@
  # obj position
 (0.0023,0,0)
 # object path
-/usr/local/src/Hand/scene/objects/indexFingerExtension_onlyObject.obj
+/home/balin/javier/Hand/handpose/scene/objects/indexFingerExtension_onlyObject.obj

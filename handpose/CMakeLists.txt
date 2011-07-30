@@ -28,6 +28,7 @@ configure_file(${CMAKE_SOURCE_DIR}/handclass_config.h.in ${CMAKE_SOURCE_DIR}/inc
 
 include (FindPkgConfig)
 find_package(Boost REQUIRED)
+# buola is right now required for connection to the cameras and for the rendering part (scene)
 find_package(Buola REQUIRED)
 find_package(GSL REQUIRED)
 pkg_check_modules ( OPENCV REQUIRED opencv )

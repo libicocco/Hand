@@ -13,4 +13,4 @@
  # obj position
 (-0.0021,-0.0027,0)
 # object path
-/usr/local/src/Hand/scene/objects/prismatic3Finger_onlyObject.obj
+/home/balin/javier/Hand/handpose/scene/objects/prismatic3Finger_onlyObject.obj

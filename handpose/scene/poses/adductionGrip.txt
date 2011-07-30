@@ -13,4 +13,4 @@
  # obj position
 (0,0,-0.0162)
 # object path
-/usr/local/src/Hand/scene/objects/adductionGrip_onlyObject.obj
+/home/balin/javier/Hand/handpose/scene/objects/adductionGrip_onlyObject.obj

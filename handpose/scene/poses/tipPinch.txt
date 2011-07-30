@@ -13,4 +13,4 @@
  # obj position
 (0,0,0.0101)
 # object path
-/usr/local/src/Hand/scene/objects/tipPinch_onlyObject.obj
+/home/balin/javier/Hand/handpose/scene/objects/tipPinch_onlyObject.obj

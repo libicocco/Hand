@@ -18,29 +18,10 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
     along with Hand.  If not, see <http://www.gnu.org/licenses/>.
 
 **********************************************/
-/*
- * =====================================================================================
- * 
- *       Filename:  silhouette.h
- * 
- *    Description:  DistTransform as a bitmap
- * 
- *        Version:  1.0
- *        Created:  06/02/10 12:29:52 CEST
- *       Revision:  none
- *       Compiler:  gcc
- * 
- *         Author:  Javier Romero (jrgn), jrgn@kth.se
- *        Company:  CAS/CSC KTH
- * 
- * =====================================================================================
- */
 
 #ifndef DISTTRANSFORMH
 #define DISTTRANSFORMH
 
-//#include <opencv/cv.h>
-//#include <opencv/highgui.h>
 #include "opencv2/core/core.hpp"
 #include <vector>
 #include <iostream>
@@ -57,14 +38,10 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 #include <iostream>
 #include <opencv2/highgui/highgui_c.h>
 #include <opencv2/imgproc/imgproc.hpp>
-//#include <opencv/highgui.h>
 #include <cmath>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/progress.hpp>
 #include <boost/format.hpp>
-#include <buola/image.h>
-#include <buola/image/image_algo.h>
-#include <buola/cv/opencv.h>
 #include "utils.h"
 #include "bb.h"
 #include "distTransform.h"
@@ -119,14 +96,7 @@ class DistTransform: public Feature<tType>
         }
     public:
         DistTransform():Feature<tType>(),mSil(NCELLS,NCELLS,IPL_DEPTH_32F){}
-        void draw(boost::gil::gray8_image_t &pFeatIm,char* pFeatPath=NULL) const
-        {
-            //    pFeatIm.recreate(NCELLS*50,NCELLS*50,boost::gil::gray32f_pixel_t(0.0),NCELLS*50);
-            //    IplImage* pDist_ipl = buola::cvi::ipl_wrap(view(pFeatIm));
-            //    cvResize(mSil,pDist_ipl);
-            pFeatIm.recreate(NCELLS,NCELLS,boost::gil::gray8_pixel_t(255),NCELLS);
-            boost::gil::copy_pixels(buola::cvi::gil_wrap<boost::gil::gray8_view_t>(mSil),view(pFeatIm));
-        }
+        void draw(cv::Mat &pFeatIm) const {pFeatIm = mSil;}
 };
 
 #endif

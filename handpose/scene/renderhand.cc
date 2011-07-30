@@ -241,7 +241,8 @@ int main(int pNArg,char **pArgs)
             lDBelem.setOri(getCam2PalmR(lSkeleton,lCamera));
             
             lDBelem.setPartsLocation(partsLocation2String(lSkeleton,lCamera));
-            lDBelem.setCamAtFromUp(lAt,lFrom,lUp);
+            lDBelem.setCamAtFromUp(lAt.x,lAt.y,lAt.z,lFrom.x,lFrom.y,lFrom.z,lUp.x,lUp.y,lUp.z);
+            //lDBelem.setCamAtFromUp(lAt,lFrom,lUp);
             lDBelem.setImagePath(lPosePath.string());
             lDBelem.setIndex(p*(gNumViews*gNFrames)+f*gNumViews+i);
             if(cmd_line().IsSet(gHOGPathOption))

@@ -13,4 +13,4 @@
  # obj position
 (-0.0115,-0.057,-0.0001)
 # object path
-/usr/local/src/Hand/scene/objects/precisionDisk_onlyObject.obj
+/home/balin/javier/Hand/handpose/scene/objects/precisionDisk_onlyObject.obj

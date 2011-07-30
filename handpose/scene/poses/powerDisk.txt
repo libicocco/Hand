@@ -13,4 +13,4 @@
  # obj position
 (0.0137,-0.0006,0)
 # object path
-/usr/local/src/Hand/scene/objects/powerDisk_onlyObject.obj
+/home/balin/javier/Hand/handpose/scene/objects/powerDisk_onlyObject.obj

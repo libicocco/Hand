@@ -61,9 +61,6 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/progress.hpp>
 #include <boost/format.hpp>
-#include <buola/image.h>
-#include <buola/image/image_algo.h>
-#include <buola/cv/opencv.h>
 #include "utils.h"
 #include "bb.h"
 /** 
@@ -152,11 +149,6 @@ class Edge: public Feature<tPairUShort>
         }
     public:
         Edge():Feature<tPairUShort>(){}
-        void draw(boost::gil::gray8_image_t &pFeatIm,char* pFeatPath=NULL) const
-        {
-            cv::Size lSz = mEdge.size();
-            pFeatIm.recreate(lSz.width,lSz.height,boost::gil::gray8_pixel_t(255),lSz.width);
-            boost::gil::copy_pixels(buola::cvi::gil_wrap<boost::gil::gray8_view_t>(mEdge),view(pFeatIm));
-        }
+        void draw(cv::Mat pFeatIm) const {pFeatIm = mEdge;}
 };
 #endif

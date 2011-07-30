@@ -13,4 +13,4 @@
  # obj position
 (0.0041,-0.0255,-0.0227)
 # object path
-/usr/local/src/Hand/scene/objects/parallelExtension_onlyObject.obj
+/home/balin/javier/Hand/handpose/scene/objects/parallelExtension_onlyObject.obj

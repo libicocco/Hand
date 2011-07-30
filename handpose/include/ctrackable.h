@@ -21,8 +21,6 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 #ifndef _CTRACKABLE_H_
 #define _CTRACKABLE_H_
 #include <opencv2/core/core.hpp>
-#include <buola/geometry/crect.h>
-#include <buola/geometry.h>
 #include <iostream>
 
 /** 
@@ -42,22 +40,6 @@ CAnyPoint subtract(const CAnyPoint &s1, const CAnyPoint &s2)
 }
 
 /** 
- * @brief Subtract two rectangles
- * 
- * @param s1 First Rectangle
- * @param s2 Second Rectangle
- * 
- * @return Subtraction of rectangle centers
- */
-    template <typename CAnyPoint>
-CAnyPoint subtract(const buola::CRect &s1, const buola::CRect &s2)
-{
-  CAnyPoint lTmp = s1.GetCenter();
-  lTmp -= s2.GetCenter();
-  return lTmp; 
-}
-
-/** 
  * @brief Subtract two OpenCV rectangles
  * 
  * @param s1 First Rectangle
@@ -68,8 +50,6 @@ CAnyPoint subtract(const buola::CRect &s1, const buola::CRect &s2)
     template <typename CAnyPoint>
 CAnyPoint subtract(const cv::Rect &s1, const cv::Rect &s2)
 {
-	//return buola::CPoint((s1.x+(s1.width/2))-(s2.x+(s2.width/2)),
-	//										 (s1.y+(s1.height/2))-(s2.y+(s2.height/2)));
 	return CAnyPoint((s1.x+(s1.width/2))-(s2.x+(s2.width/2)),
 											 (s1.y+(s1.height/2))-(s2.y+(s2.height/2)));
 }
@@ -111,7 +91,6 @@ class CTrackable
   CShape getPrevPred() const 
   {
     CShape lPrevPred = mPredicted;
-    //return lPrevPred -= mVelocity; // FIXME: changed from buola::Point to cv::Point
 		lPrevPred.x -= mVelocity.x;
 		lPrevPred.y -= mVelocity.y;
     return lPrevPred;
@@ -122,7 +101,6 @@ class CTrackable
   void updatePred()
   {
     mPredicted = mReal;
-    //mPredicted += mVelocity;// FIXME: changed from buola::Point to cv::Point
     mPredicted.x += mVelocity.x;
     mPredicted.y += mVelocity.y;
   }
