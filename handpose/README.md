@@ -45,7 +45,7 @@ Finally, you can build the basic rendering database:
 
 And use it to create the big database:
 
-    build/scene/renderhand  --hogpath scene/hog.bin --db scene/hands.db
+    rm scene/hog.bin scene/hands.db && build/scene/renderhand  --hogpath scene/hog.bin --db scene/hands.db
 
 Contributors:
 -------------

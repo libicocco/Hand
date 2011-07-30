@@ -24,9 +24,7 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 #include "hog.h" // from handclass
 
 #include <stdlib.h>
-#include <cstdlib>
 
-#include <time.h>
 #include <sstream>
 #include <iomanip>
 #include <iterator>
@@ -63,51 +61,61 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 
 #include "handclass_config.h"
 
-static const unsigned gNFrames(5);
 static const buola::C3DVector lHandZero(0.31,-0.57,0.02);
 static const buola::C3DVector lHandRest(0.31,-0.5,0.02);
 static const buola::C3DVector lObjZero(0,0,0);
 static const double gCamDistance(0.3);
-static const unsigned gNumViews(10);
+static const unsigned gNumGrasps(31);
 
 using namespace buola;
+static buola::CCmdLineOption<std::string> gHOGPathOption("hogpath",'h',L"Path to hog file to be saved","scene/hog.bin");
+static buola::CCmdLineOption<std::string> gDBPathOption("db",'d',L"Path to db file to be saved","scene/hands.db");
+static buola::CCmdLineOption<unsigned> gNumViewsOption("nv",'v',L"Number of views to be render of each grasp step",10);
+static buola::CCmdLineOption<unsigned> gNStepsOption("ns",'s',L"Number of steps rendered for each grasp",5);
 
 int main(int pNArg,char **pArgs)
 {
-//   const std::vector<std::string> &lPosePathV=cmd_line()GetArgs();
-  
-  srand(time(NULL));
+  // engine for generating real numbers between -1 and 1
+  std::mt19937 lEngine(time(0));
+  std::uniform_real_distribution<> lDist(-1,1);
+
   buola_init(pNArg,pArgs);
+  static const unsigned gNumViews(cmd_line().GetValue(gNumViewsOption));
+  static const unsigned gNSteps(cmd_line().GetValue(gNStepsOption));
   
   fsystem::path lObjectPathFS(SCENEPATH);
   lObjectPathFS/="objects/adductedThumb_onlyObject.obj";
   std::string lObjectPath = lObjectPathFS.string();
 
-  fsystem::path lObjPathFS(SCENEPATH);
-  lObjPathFS/="rHandP3.obj";
+  fsystem::path lHandObjPathFS(SCENEPATH);
+  lHandObjPathFS/="rHandP3.obj";
   fsystem::path lTexturePathFS(SCENEPATH);
   lTexturePathFS/="hand_texture.ppm";
   
+  // rotation matrix of the camera wrt the palm
+  // not used since we obtain the hand and the camera orientations
   double *lCam2PalmRArray=new double[9];
-  CHandSkeleton lSkeleton(lObjPathFS.string().c_str(),lTexturePathFS.string().c_str());
+
+  // Hand skeleton with the hand mesh and texture
+  CHandSkeleton lSkeleton(lHandObjPathFS.string().c_str(),lTexturePathFS.string().c_str());
   
   scene::PRTTransform lHandTransf=new scene::CRTTransform;
   scene::PRTTransform lObjTransf=new scene::CRTTransform;
   lHandTransf->SetTranslation(lHandZero);
   lObjTransf->SetTranslation(lObjZero);
   
+  // generate a vector of random camera origins(first) on the unit sphere,
+  // with random camera orientation (second)
   std::pair<C3DVector,C3DVector> *lXYZ=new std::pair<C3DVector,C3DVector>[gNumViews];
   for(int i=0;i<gNumViews;)
   {
-    lXYZ[i].first.Set((2*static_cast<float>(rand())/static_cast<float>(RAND_MAX))-1.0,
-                      (2*static_cast<float>(rand())/static_cast<float>(RAND_MAX))-1.0,
-                      (2*static_cast<float>(rand())/static_cast<float>(RAND_MAX))-1.0);
+    // generate a 3D point in a cube [-1,1]
+    lXYZ[i].first.Set(lDist(lEngine),lDist(lEngine),lDist(lEngine));
+    // if it inside the sphere centered in the origin with radious 1 and not in the origin
     if(lXYZ[i].first.Modulus2()<=1 && lXYZ[i].first.Modulus2()!=0)
     {
       // strictly speaking lRand should be non-zero and not parallel to lXYZ[i].first
-      C3DVector lRand((2*static_cast<float>(rand())/static_cast<float>(RAND_MAX))-1.0,
-                      (2*static_cast<float>(rand())/static_cast<float>(RAND_MAX))-1.0,
-                      (2*static_cast<float>(rand())/static_cast<float>(RAND_MAX))-1.0);
+      C3DVector lRand(lDist(lEngine),lDist(lEngine),lDist(lEngine));
 //       lXYZ[i].first=normalize(lXYZ[i].first);
       lXYZ[i].first=lXYZ[i].first*(gCamDistance/lXYZ[i].first.Modulus());
       lXYZ[i].second=cross_product(lXYZ[i].first,lRand);
@@ -120,30 +128,29 @@ int main(int pNArg,char **pArgs)
   {
     std::ofstream lHOGFS;
     CDB *lDB=(cmd_line().IsSet(gDBPathOption))?new CDB(cmd_line().GetValue(gDBPathOption)):NULL;
+
+    // previously generated database with the basic poses
     fsystem::path lBasicRenderDbFS(SCENEPATH);
     lBasicRenderDbFS/="taxonomy.db";
     CDB lDBtaxonomy(lBasicRenderDbFS);
+
     std::vector<float> lFeature;
     if(cmd_line().IsSet(gHOGPathOption))
       lHOGFS.open(cmd_line().GetValue(gHOGPathOption).c_str());
     
+    // we consider the rest position as all joints being 0
     tFullPoseV lRestPose = tFullPoseV::Zero();
     Hog<float> lHog;
     unsigned lFeatSize=lHog.getFeatSize();
-    float *lFeatureA=new float[lFeatSize*31*gNFrames*gNumViews];
+    float *lFeatureA=new float[lFeatSize*gNumGrasps*gNSteps*gNumViews];
     
-//     for(int p=0;p<lPosePathV.size();++p)
-    for(int p=0;p<31;++p)
+    for(int p=0;p<gNumGrasps;++p)
     {
+      // get the basic pose
       CDBelement lDBelem=lDBtaxonomy.query(p);
-      //       std::cout << lDBelem << std::endl;
-      //       loadPose(lPosePathV[p],lSkeleton,lHandTransf,lObjTransf,lObjectPath,lCam2PalmRArray);
-      //       CDBelement lDBelem(lPosePathV[p],p);
-      //       lDBtaxonomy.insertElement(lDBelem);
       
       scene::PPerspectiveCamera lCamera=new scene::CPerspectiveCamera;
       lCamera->SetClipping(0.01,200);
-//       CSaveButton lButton(lSkeleton,lHandTransf,lObjTransf,lCamera,lObjectPath,NULL);
       
       scene::PScene lScene=new scene::CScene;
       
@@ -153,19 +160,31 @@ int main(int pNArg,char **pArgs)
       
       tFullPoseV lFullPose;
       lDBelem.getFullPose(lFullPose);
+
+      // create the output folder for the images
       std::stringstream lPoseFolder;
       lPoseFolder << std::setfill('0');
       lPoseFolder << "out/" << std::setw(3) << p;
       fsystem::path lFolderPath(fsystem::initial_path());
       lFolderPath/=lPoseFolder.str();
       fsystem::create_directory(lFolderPath);
-      for(int f=0;f<gNFrames;++f)
+
+      for(int f=0;f<gNSteps;++f)
       {
-        tFullPoseV lFullPoseInterp=((gNFrames-(f+1))*lRestPose+(f+1)*lFullPose)/gNFrames;
+        // interpolate between the rest position (Zero) and the basic pose
+        tFullPoseV lFullPoseInterp=((gNSteps-(f+1))*lRestPose+(f+1)*lFullPose)/gNSteps;
         lDBelem.setFullPose(lFullPoseInterp);
+
+
+        // it's probably better to put as much information inside lDBelem
+        // before passing it to loadPose (line 255)
+
+
+
         loadPose(lDBelem,lSkeleton,lHandTransf,lObjTransf,lObjectPath,lCam2PalmRArray);
 
-        lHandTransf->SetTranslation(((gNFrames-(f+1))*lHandRest+(f+1)*lHandTransf->GetTranslation())/gNFrames);
+        // interpolate rest translation and basic translation
+        lHandTransf->SetTranslation(((gNSteps-(f+1))*lHandRest+(f+1)*lHandTransf->GetTranslation())/gNSteps);
         
         lScene->GetWorld()->AddChild(lHandTransf);
         lHandTransf->AddChild(lSkeleton.GetSkeleton()->GetRoot()->GetTransform());
@@ -179,8 +198,6 @@ int main(int pNArg,char **pArgs)
       
         for(int i=0;i<gNumViews;++i)
         {
-          //std::cout << i << std::endl;
-          //         lCamera->LookAt(C3DVector(0,0,0),C3DRotation(lYPR[i*3],lYPR[i*3+1],lYPR[i*3+2]),0.25);
           
           C3DVector lAt(0,0,0);
           C3DVector lFrom(lXYZ[i].first);
@@ -189,17 +206,15 @@ int main(int pNArg,char **pArgs)
           
           lRenderer.SetCamera(lCamera);
           lRenderer.GetImage(lImage);
+
           std::stringstream lPoseName;
           lPoseName << std::setfill('0');
           lPoseName << std::setw(3) << f << "_" << std::setw(3) << i << ".pgm";
           fsystem::path lPosePath(lFolderPath);
           lPosePath/=lPoseName.str();
-          //         lPath << "out/" << std::setw(3) << p << "_" << std::setw(3) << int(rad2deg(lYPR[i*3])) << "_" << std::setw(3) << int(rad2deg(lYPR[i*3+1])) << "_" << std::setw(3) << int(rad2deg(lYPR[i*3+2])) << ".pgm";
           save(lImage,lPosePath.string());
-//           lPath.seekp(static_cast<long>(lPath.tellp())-4);
-//           lPath << ".txt";
-//           lButton.saveURL(lPath.str());
           
+          // if required, compute and save the hog
           if(cmd_line().IsSet(gHOGPathOption))
           {
             cv::Mat lImageCV=cv::Mat(buola::img::ipl_wrap(lImage),false);
@@ -209,6 +224,7 @@ int main(int pNArg,char **pArgs)
             cv::cvtColor(lImageCV,lGrayIm,CV_BGR2GRAY);
             cv::threshold(lGrayIm,lGrayIm,1,255,cv::THRESH_BINARY);
             
+            // compute contours to localize the hand
             std::vector<cv::Point> lAllContours;
             {
               std::vector<std::vector<cv::Point> > lContours;
@@ -218,33 +234,30 @@ int main(int pNArg,char **pArgs)
                 lAllContours.insert(lAllContours.end(),lContours[i].begin(),lContours[i].end());
             }
 
-	    if(lAllContours.empty())
-	    {
+            // exit if there's no hand pixel; it would fail with a weird error when computing the hog
+            if(lAllContours.empty())
+            {
               std::cerr << "There is no hand in the figure" << std::endl << 
                 "Run it again (to randomize the view point) or change the rendering parameters" << std::endl;
               exit(1);
-	    }
+            }
             
             cv::Rect lBBox=cv::boundingRect(cv::Mat(lAllContours));
             
             std::pair<cv::Mat,cv::Mat> lTstMaskCrop=std::make_pair(lImageCV32F(lBBox),lGrayIm(lBBox));
             lFeature=lHog.compute(lTstMaskCrop,99999999);
-            std::copy(lFeature.begin(),lFeature.end(),&(lFeatureA[(p*(gNumViews*gNFrames)+f*gNumViews+i)*lFeatSize]));
-//             std::copy(lFeature.begin(),lFeature.end(),std::ostream_iterator<float>(lHOGFS," "));
-//             lHOGFS << std::endl;
+            std::copy(lFeature.begin(),lFeature.end(),&(lFeatureA[(p*(gNumViews*gNSteps)+f*gNumViews+i)*lFeatSize]));
           }
+
+          // if required, save the pose parameters in a sqlite3 database
           if(cmd_line().IsSet(gDBPathOption))
           {
-//             for(int e=0;e<9;++e)
-//               std::cout << lCam2PalmRArray[e] << " ";
-//             std::cout << std::endl;
             lDBelem.setOri(getCam2PalmR(lSkeleton,lCamera));
             
             lDBelem.setPartsLocation(partsLocation2String(lSkeleton,lCamera));
             lDBelem.setCamAtFromUp(lAt.x,lAt.y,lAt.z,lFrom.x,lFrom.y,lFrom.z,lUp.x,lUp.y,lUp.z);
-            //lDBelem.setCamAtFromUp(lAt,lFrom,lUp);
             lDBelem.setImagePath(lPosePath.string());
-            lDBelem.setIndex(p*(gNumViews*gNFrames)+f*gNumViews+i);
+            lDBelem.setIndex(p*(gNumViews*gNSteps)+f*gNumViews+i);
             if(cmd_line().IsSet(gHOGPathOption))
               lDBelem.setFeature(lFeature);
             lDB->insertElement(lDBelem);
@@ -255,7 +268,7 @@ int main(int pNArg,char **pArgs)
     }
     if(cmd_line().IsSet(gHOGPathOption))
     {
-      lHOGFS.write(reinterpret_cast<char*>(lFeatureA),lFeatSize*31*gNFrames*gNumViews*sizeof(float));
+      lHOGFS.write(reinterpret_cast<char*>(lFeatureA),lFeatSize*gNumGrasps*gNSteps*gNumViews*sizeof(float));
       lHOGFS.close();
     }
     if(cmd_line().IsSet(gDBPathOption))

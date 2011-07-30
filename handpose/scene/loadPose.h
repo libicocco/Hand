@@ -24,9 +24,7 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 #include "cDBelement.h" // conflicts with X
 
 #include <stdlib.h>
-#include <cstdlib>
 
-#include <time.h>
 #include <sstream>
 #include <iomanip>
 #include <iterator>
@@ -59,11 +57,6 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 #include "CHandSkeleton.h"
 
 using namespace buola;
-
-static buola::CCmdLineOption<std::string> gObjectPathOption("objpath",'o',L"Path to object .obj file");
-static buola::CCmdLineOption<std::string> gPosePathOption("posepath",'p',L"Path to pose file");
-static buola::CCmdLineOption<std::string> gHOGPathOption("hogpath",'h',L"Path to hog file to be saved");
-static buola::CCmdLineOption<std::string> gDBPathOption("db",'d',L"Path to db file to be saved");
 
 static const unsigned gBufSize(1024);
 

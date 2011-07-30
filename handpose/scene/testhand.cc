@@ -62,6 +62,9 @@ static const unsigned gSliderOffsetX(150);
 
 using namespace buola;
 
+static buola::CCmdLineOption<std::string> gObjectPathOption("objpath",'o',L"Path to object .obj file");
+static buola::CCmdLineOption<std::string> gPosePathOption("posepath",'p',L"Path to pose file");
+
 void addCamSlider(int y,scene::CSceneView *pScene,std::vector<CCamSlider*> &pRots,
         C3DRotation &pRot,double buola::C3DRotation::*pRotVal,
         const std::string &pCaption,scene::PPerspectiveCamera &pCam)
