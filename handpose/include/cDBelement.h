@@ -272,7 +272,13 @@ public:
     std::getline(lInfoS,lStrTmp); // comment
     std::getline(lInfoS,mObjPos);
     std::getline(lInfoS,lStrTmp); // comment
-    std::getline(lInfoS,mObjPath);
+
+    std::getline(lInfoS,mObjPath); // relative path, we should build the full path
+    fsystem::path lObjPath = pInfoPath;
+    lObjPath.remove_filename();
+    lObjPath/=mObjPath;
+    mObjPath = lObjPath.string();
+
     mCamAt="0 0 0";
     mCamFrom="0 -1 0";
     mCamUp="0 0 1";

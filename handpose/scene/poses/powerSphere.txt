@@ -13,4 +13,4 @@
  # obj position
 (-0.0144,-0.0174,-0.0021)
 # object path
-/home/balin/javier/Hand/handpose/scene/objects/powerSphere_onlyObject.obj
+../objects/powerSphere_onlyObject.obj

@@ -33,14 +33,9 @@ Then build it:
     cmake ..
     make -j5
 
-Afterwards you should change the path to the obj mesh files in order to 
-create the hand database:
+You can build the basic rendering database:
 
     cd $HAND_PATH/Hand/handpose
-    sed -i -e "s|/usr/local/src/Hand|$HAND_PATH/Hand/handpose|g" scene/poses/*
-
-Finally, you can build the basic rendering database:
-
     build/apps/createRenderDB
 
 And use it to create the big database:

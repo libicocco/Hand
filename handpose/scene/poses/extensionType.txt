@@ -13,4 +13,4 @@
  # obj position
 (0,-0.058,-0.0003)
 # object path
-/home/balin/javier/Hand/handpose/scene/objects/extensionType_onlyObject.obj
+../objects/extensionType_onlyObject.obj

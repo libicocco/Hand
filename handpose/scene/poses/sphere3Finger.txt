@@ -13,4 +13,4 @@
  # obj position
 (0,0,0)
 # object path
-/home/balin/javier/Hand/handpose/scene/objects/sphere3Finger_onlyObject.obj
+../objects/sphere3Finger_onlyObject.obj

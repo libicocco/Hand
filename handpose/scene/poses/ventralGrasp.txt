@@ -13,4 +13,4 @@
  # obj position
 (0,0,0)
 # object path
-/home/balin/javier/Hand/handpose/scene/objects/ventralGrasp_onlyObject.obj
+../objects/ventralGrasp_onlyObject.obj

@@ -13,4 +13,4 @@
  # obj position
 (0,0,0)
 # object path
-/home/balin/javier/Hand/handpose/scene/objects/palmarPinch_onlyObject.obj
+../objects/palmarPinch_onlyObject.obj

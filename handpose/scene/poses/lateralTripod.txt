@@ -13,4 +13,4 @@
  # obj position
 (0,0,0)
 # object path
-/home/balin/javier/Hand/handpose/scene/objects/lateralTripod_onlyObject.obj
+../objects/lateralTripod_onlyObject.obj
