@@ -185,6 +185,12 @@ int main(int pNArg,char **pArgs)
 
         // interpolate rest translation and basic translation
         lHandTransf->SetTranslation(((gNSteps-(f+1))*lHandRest+(f+1)*lHandTransf->GetTranslation())/gNSteps);
+
+        // why is this changing the result??
+        //std::ostringstream lHandPosSS;
+        //C3DVector lHT =lHandTransf->GetTranslation(); 
+        //lHandPosSS << lHT.x << " " << lHT.y << " " << lHT.z;
+        //lDBelem.setHandPos(lHandPosSS.str());
         
         lScene->GetWorld()->AddChild(lHandTransf);
         lHandTransf->AddChild(lSkeleton.GetSkeleton()->GetRoot()->GetTransform());

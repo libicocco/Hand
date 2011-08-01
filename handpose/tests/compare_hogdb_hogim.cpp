@@ -46,7 +46,7 @@ int main(int argc,char *argv[])
   
   Hog<float> lHog;
   Feature<float> *lFeat = &lHog;
-  lFeat->compute(lImMask,999999999999);
+  lFeat->compute(lImMask,INVPROBDEFAULT);
   //std::cout << *lFeat << std::endl;
   //std::cout << "---------------------------" << std::endl;
   

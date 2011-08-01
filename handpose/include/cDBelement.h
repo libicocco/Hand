@@ -434,6 +434,7 @@ public:
   void setFeature(const std::vector<float> &pFeature){mFeature=pFeature;}
   void setIndex(const unsigned pIndex){mIndex=pIndex;}
   void setImagePath(const std::string pImagePath){mImagePath=pImagePath;}
+  void setHandPos(const std::string pHandPos){mHandPos=pHandPos;}
 private:
   std::string mOriJoints;
   std::string mPartsLocation;
