@@ -55,10 +55,24 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 #include <buola/geometry/cperspectiveprojectionmatrix.h>
 
 #include "CHandSkeleton.h"
+#include "handclass_config.h"
 
 using namespace buola;
 
 static const unsigned gBufSize(1024);
+
+void setTransf(const std::string &pPos,const std::string &pOri,scene::PRTTransform &pTransf)
+{
+  std::stringstream lVectorSS(pOri);
+  buola::CQuaternion lQ;
+  lVectorSS >> lQ;
+  lVectorSS.clear();
+  lVectorSS.str(pPos);
+  buola::C3DVector lT;
+  lVectorSS >> lT;
+  pTransf->SetRotation(lQ);
+  pTransf->SetTranslation(lT);
+}
 
 void setPose(CHandSkeleton &pSkeleton)
 {
@@ -98,46 +112,13 @@ void setPose(CHandSkeleton &pSkeleton)
       }
 }
 
-void loadPose(const CDBelement &pElem,CHandSkeleton &pSkeleton,scene::PRTTransform &pHandTransf,
+//void loadPose(const std::string &pPosePath,CHandSkeleton &pSkeleton,scene::PRTTransform &pHandTransf,
+void loadPose(const fsystem::path &pPosePath,CHandSkeleton &pSkeleton,scene::PRTTransform &pHandTransf,
               scene::PRTTransform &pObjTransf,std::string &pObjectPath,double *pCam2PalmRArray)
 {
-  std::stringstream lOriSS(pElem.getOriJoints());
-  for(int i=0;i<9;++i)
-    lOriSS >> pCam2PalmRArray[i];
-  
-  double *lJointValues=new double[51];
-  for(int i=0;i<51;++i)
-    lOriSS >> lJointValues[i];
-  for(int i=0;i<17;++i)
-    for(int a=0;a<3;++a)
-      pSkeleton[i]->SetJointValue(gJointTypes[a],lJointValues[i*3+a]);
-  delete []lJointValues;
-  
-  std::stringstream lHandOri(pElem.getHandOri());
-  buola::CQuaternion lHandQ;
-  lHandOri >> lHandQ;
-  std::stringstream lHandPos(pElem.getHandPos());
-  buola::C3DVector lHandT;
-  lHandPos >> lHandT;
-  pHandTransf->SetRotation(lHandQ);
-  pHandTransf->SetTranslation(lHandT);
-  
-  std::stringstream lObjOri(pElem.getObjOri());
-  buola::CQuaternion lObjQ;
-  lObjOri >> lObjQ;
-  std::stringstream lObjPos(pElem.getObjPos());
-  buola::C3DVector lObjT;
-  lObjPos >> lObjT;
-  pObjTransf->SetRotation(lObjQ);
-  pObjTransf->SetTranslation(lObjT);
-  pObjectPath=pElem.getObjPath();
-}
-
-void loadPose(const std::string &pPosePath,CHandSkeleton &pSkeleton,scene::PRTTransform &pHandTransf,
-              scene::PRTTransform &pObjTransf,std::string &pObjectPath,double *pCam2PalmRArray)
-{
-  std::ifstream lFS(pPosePath.c_str());
+  std::ifstream lFS(pPosePath.string().c_str());
   char lLine[gBufSize];
+  char lLine2[gBufSize];
   lFS.getline(lLine,gBufSize); // comment
   lFS.getline(lLine,gBufSize); // cam
   std::stringstream lOriSS(lLine);
@@ -161,33 +142,23 @@ void loadPose(const std::string &pPosePath,CHandSkeleton &pSkeleton,scene::PRTTr
   lFS.getline(lLine,gBufSize); // positions, not required for loading
   lFS.getline(lLine,gBufSize); // comment
   lFS.getline(lLine,gBufSize); // hand orientation
-  buola::CQuaternion lHandQ;
-  std::stringstream lHandQSS(lLine);
-  lHandQSS >> lHandQ;
-  lFS.getline(lLine,gBufSize); // comment
-  lFS.getline(lLine,gBufSize); // hand translation
-  buola::C3DVector lHandT;
-  std::stringstream lHandTSS(lLine);
-  lHandTSS >> lHandT;
-  pHandTransf->SetRotation(lHandQ);
-  pHandTransf->SetTranslation(lHandT);
-  
+  lFS.getline(lLine2,gBufSize); // comment
+  lFS.getline(lLine2,gBufSize); // hand translation
+  setTransf(lLine2,lLine,pHandTransf);
+
   lFS.getline(lLine,gBufSize); // comment
   lFS.getline(lLine,gBufSize); // obj orientation
-  buola::CQuaternion lObjQ;
-  std::stringstream lObjQSS(lLine);
-  lObjQSS >> lObjQ;
-  lFS.getline(lLine,gBufSize); // comment
-  lFS.getline(lLine,gBufSize); // obj translation
-  buola::C3DVector lObjT;
-  std::stringstream lObjTSS(lLine);
-  lObjTSS >> lObjT;
-  pObjTransf->SetRotation(lObjQ);
-  pObjTransf->SetTranslation(lObjT);
+  lFS.getline(lLine2,gBufSize); // comment
+  lFS.getline(lLine2,gBufSize); // obj translation
+  setTransf(lLine2,lLine,pObjTransf);
   
   lFS.getline(lLine,gBufSize); // comment
   lFS.getline(lLine,gBufSize); // obj Transform
   pObjectPath = std::string(lLine);
+  fsystem::path lObjectPath(pPosePath);
+  lObjectPath.remove_filename();
+  lObjectPath/=pObjectPath;
+  pObjectPath=lObjectPath.string();
 }
 
 #endif

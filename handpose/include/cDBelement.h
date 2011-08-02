@@ -408,6 +408,14 @@ public:
   const unsigned& getIndex() const{return mIndex;}
   const std::string& getImagePath() const{return mImagePath;}
   const std::string& getOriJoints() const{return mOriJoints;}
+  void getOriJoints(double *pCam2PalmRArray,double *pJoints) const
+  {
+    std::stringstream lOriSS(mOriJoints);
+    for(int i=0;i<9;++i)
+      lOriSS >> pCam2PalmRArray[i];
+    for(int i=0;i<51;++i)
+      lOriSS >> pJoints[i];
+  }
   const std::string& getHandOri() const{return mHandOri;}
   const std::string& getHandPos() const{return mHandPos;}
   const std::string& getObjOri() const{return mObjOri;}

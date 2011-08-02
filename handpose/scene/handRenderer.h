@@ -50,21 +50,9 @@
 #include "CHandSkeleton.h"
 
 #include "cDBelement.h"
+#include "loadPose.h"
 
 using namespace buola;
-void setTransf(const std::string &pPos,const std::string &pOri,scene::PRTTransform &pTransf)
-{
-  std::stringstream lVectorSS(pOri);
-  buola::CQuaternion lQ;
-  lVectorSS >> lQ;
-  lVectorSS.clear();
-  lVectorSS.str(pPos);
-  buola::C3DVector lT;
-  lVectorSS >> lT;
-  pTransf->SetRotation(lQ);
-  pTransf->SetTranslation(lT);
-}
-
 class HandRenderer
 {
   public:
@@ -81,7 +69,7 @@ class HandRenderer
       mObjPath("")
     {
       mCamera->SetClipping(0.01,200);
-      mRenderer.SetClearColor(buola::CColor(255,0,0));
+      mRenderer.SetClearColor(buola::CColor(0,0,0));
     }
 
 

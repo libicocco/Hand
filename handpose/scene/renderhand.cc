@@ -99,9 +99,9 @@ int main(int pNArg,char **pArgs)
   // Hand skeleton with the hand mesh and texture
   CHandSkeleton lSkeleton(lHandObjPathFS.string().c_str(),lTexturePathFS.string().c_str());
   
-  scene::PRTTransform lHandTransf=new scene::CRTTransform;
+  scene::PRTTransform lOrigHandTransf=new scene::CRTTransform;
   scene::PRTTransform lObjTransf=new scene::CRTTransform;
-  lHandTransf->SetTranslation(lHandZero);
+  lOrigHandTransf->SetTranslation(lHandZero);
   lObjTransf->SetTranslation(lObjZero);
   
   // generate a vector of random camera origins(first) on the unit sphere,
@@ -164,33 +164,40 @@ int main(int pNArg,char **pArgs)
       // create the output folder for the images
       std::stringstream lPoseFolder;
       lPoseFolder << std::setfill('0');
-      lPoseFolder << "out/" << std::setw(3) << p;
+      lPoseFolder << std::setw(3) << p;
       fsystem::path lFolderPath(fsystem::initial_path());
+      lFolderPath/="out/";
       lFolderPath/=lPoseFolder.str();
       fsystem::create_directory(lFolderPath);
 
+      setTransf(lDBelem.getHandPos(),lDBelem.getHandOri(),lOrigHandTransf);
       for(int f=0;f<gNSteps;++f)
       {
         // interpolate between the rest position (Zero) and the basic pose
         tFullPoseV lFullPoseInterp=((gNSteps-(f+1))*lRestPose+(f+1)*lFullPose)/gNSteps;
         lDBelem.setFullPose(lFullPoseInterp);
 
+        double *lJointValues=new double[51];
+        lDBelem.getOriJoints(lCam2PalmRArray,lJointValues);
 
-        // it's probably better to put as much information inside lDBelem
-        // before passing it to loadPose (line 255)
+        for(int i=0;i<17;++i)
+          for(int a=0;a<3;++a)
+            lSkeleton[i]->SetJointValue(gJointTypes[a],lJointValues[i*3+a]);
+        delete []lJointValues;
 
+        setTransf(lDBelem.getObjPos(),lDBelem.getObjOri(),lObjTransf);
+        lObjectPath=lDBelem.getObjPath();
 
-
-        loadPose(lDBelem,lSkeleton,lHandTransf,lObjTransf,lObjectPath,lCam2PalmRArray);
 
         // interpolate rest translation and basic translation
-        lHandTransf->SetTranslation(((gNSteps-(f+1))*lHandRest+(f+1)*lHandTransf->GetTranslation())/gNSteps);
+        scene::PRTTransform lHandTransf=new scene::CRTTransform;
+        lHandTransf->SetTranslation(((gNSteps-(f+1))*lHandRest+(f+1)*lOrigHandTransf->GetTranslation())/gNSteps);
 
-        // why is this changing the result??
-        //std::ostringstream lHandPosSS;
-        //C3DVector lHT =lHandTransf->GetTranslation(); 
+        std::ostringstream lHandPosSS;
+        C3DVector lHT =lHandTransf->GetTranslation(); 
+        lHandPosSS << lHT;
         //lHandPosSS << lHT.x << " " << lHT.y << " " << lHT.z;
-        //lDBelem.setHandPos(lHandPosSS.str());
+        lDBelem.setHandPos(lHandPosSS.str());
         
         lScene->GetWorld()->AddChild(lHandTransf);
         lHandTransf->AddChild(lSkeleton.GetSkeleton()->GetRoot()->GetTransform());

@@ -26,26 +26,58 @@
 #include "cDBelement.h"
 #include "handclass_config.h"
 
+static buola::CCmdLineOption<std::string> gOutFolderPathOption("outfolder",'o',L"Path to where the images and db will be saved","/tmp/images");
+
 int main(int argc,char* argv[])
 {
   buola_init(argc,argv);
-
-  fsystem::path lDBPath(SCENEPATH);
-  lDBPath/="hands.db";
-  CDB lDB(lDBPath);
 
   fsystem::path lHandObjPath(SCENEPATH);
   lHandObjPath/="rHandP3.obj";
   fsystem::path lHandTexturePath(SCENEPATH);
   lHandTexturePath/="hand_texture.ppm";
+  fsystem::path lOutFolderPath(buola::cmd_line().GetValue(gOutFolderPathOption));
+  fsystem::create_directory(lOutFolderPath);
+  //fsystem::path lDBPath(lOutFolderPath);
+  //lDBPath/="poses.db";
 
   HandRenderer lHRender(lHandObjPath.string().c_str(),lHandTexturePath.string().c_str());
   
+  // Given a db, rerender it; not interesting
+  fsystem::path lDBPath(SCENEPATH);
+  lDBPath/="hands.db";
+  CDB lDB(lDBPath);
+
   for(int p=0;p<100;++p)
   {
     CDBelement lDBelem = lDB.query(p);
     lHRender.render(lDBelem);
   }
+
+  /*
+  // create a cDBelement from input
+  std::istream_iterator<double> lIt(std::cin);
+  unsigned lIndex=0
+  while(true)
+  {
+    fsystem::path lImPath(lOutFolderPath);
+
+    std::stringstream lImFilename;
+    lImFilename << std::setfill('0');
+    lImFilename << std::setw(3) << lIndex;
+    lImPath/=lImFilename.str();
+
+    std::ostringstream lJointsSS,lCamFrom,lCamUp;
+    for(int i=0;i<51;++i)
+      lJointsSS << *(lIt++);
+    lIndex++;
+  }
+  CDBelement("1 0 0 0 1 0 0 0 1",lJointsSS.str(),"",lIndex,
+             lImPath.str(),pHandOri,pHandPos,pObjOri,
+             pObjPos,pObjPath, pCamAt, pCamFrom,
+             pCamUp,pNextIndices,pFeature):
+  // render needs FullPose (last 51) ,HandPos,HandOri,ObjPath,ObjPos,ObjOri,Cam{At,From,Up},imagePath
+  */
 
   return 1;
 }
