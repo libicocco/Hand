@@ -37,6 +37,7 @@ const std::string getCam2PalmR(const CHandSkeleton &pSkeleton,const buola::scene
   buola::CQuaternion lCamQuat(pCamera->GetLookAtMatrix());
   // order still unclear
   buola::CQuaternion lHandCamQuat=conj(lCamQuat)*lHandQuat;
+  std::cout << lHandQuat << "|" << lCamQuat << "|" << lHandCamQuat << std::endl;
   buola::C3DMatrix lHandCamMat(buola::nRotate,lHandCamQuat);
   for(int i=0;i<3;++i)
     for(int j=0;j<3;++j)

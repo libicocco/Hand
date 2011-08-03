@@ -142,8 +142,9 @@ void setCamera(const double *pCam2PalmRArray,const CHandSkeleton &pSkeleton,cons
   // (pq).conj() = q.conj()*p.conj()
   // pCamera = lHandQ * pCam2PalmRArray.conj()
   buola::CQuaternion lCam2Palm(pCam2PalmRArray);
-  buola::C3DRotation lCamRotation(lHandQ*conj(lCam2Palm));
+  buola::C3DRotation lCamRotation(-lHandQ*conj(lCam2Palm));
   //buola::C3DRotation lCamRotation(conj(lHandQ)*(lCam2Palm));
+  std::cout << lHandQ << "|" << lHandQ*conj(lCam2Palm) << "|" << lCam2Palm << std::endl;
   pCamera->LookAt(C3DVector(0,0,0),lCamRotation,gCamDistance);
 }
 
@@ -179,7 +180,7 @@ int main(int pNArg,char **pArgs)
   if(cmd_line().IsSet(gPosePathOption))
   {
     loadPose(cmd_line().GetValue(gPosePathOption),lSkeleton,lHandTransf,lObjTransf,lObjectPath,lCam2PalmRArray);
-    setCamera(lCam2PalmRArray,lSkeleton,lCamera);
+    //setCamera(lCam2PalmRArray,lSkeleton,lCamera);
   }
   else
   {
@@ -233,6 +234,10 @@ int main(int pNArg,char **pArgs)
     for(int i=0;i<17;i++)
       for(int j=0;j<3;j++)
         addSlider(((i+3)*3+j)*gSliderHeight,gJointTypes[j],lSkeleton[i],&lView,lSliders);
+
+    // I have to do it here because addSlider changes the palm pose
+    if(cmd_line().IsSet(gPosePathOption))
+      setCamera(lCam2PalmRArray,lSkeleton,lCamera);
 
     lView.SetCamera(lCamera);
     lView.SetScene(lScene);

@@ -265,6 +265,7 @@ int main(int pNArg,char **pArgs)
           // if required, save the pose parameters in a sqlite3 database
           if(cmd_line().IsSet(gDBPathOption))
           {
+            std::cout << lPosePath.string();
             lDBelem.setOri(getCam2PalmR(lSkeleton,lCamera));
             
             lDBelem.setPartsLocation(partsLocation2String(lSkeleton,lCamera));
