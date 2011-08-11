@@ -49,7 +49,10 @@ class CJointSlider
         inline void OnSlider()
         {
             mBone->SetJointValue(mType,buola::deg2rad(mSliderBox->GetValue()));
-            //std::cout << mBone->GetName() << "_" << mType << " = " << mSliderBox->GetValue() << "," << mBone->GetTransformedEndPoint().x << " " << mBone->GetTransformedEndPoint().y << " " << mBone->GetTransformedEndPoint().z << " " << std::endl;
+            //std::cout << mBone->GetName() << "_" << mType << " = " << 
+            //  mSliderBox->GetValue() << "," << mBone->GetTransformedEndPoint().x <<
+            //  " " << mBone->GetTransformedEndPoint().y << " " << 
+            //  mBone->GetTransformedEndPoint().z << " " << std::endl;
             mBone->GetTransform()->Update();
             mView->Refresh();
         }

@@ -24,6 +24,7 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 #include <string>
 #include <sstream>
 #include <iterator>
+#include <array>
 #include <fstream>
 #include "typeDefinitions.h"
 #include "cDBregisterQuery.h"
@@ -198,7 +199,9 @@ static const int NPARTS           = 10;
 static const int NFULLJOINTS      = ((3*5)+2)*3; // 17*3 fingertips and fingerbases
 typedef Eigen::Matrix<double,1,NJOINTS+NORI> tPoseV;
 typedef Eigen::Matrix<double,1,NFULLJOINTS> tFullPoseV;
+typedef Eigen::Matrix<double,1,NFULLJOINTS+NORI> tFullOriPoseV;
 typedef Eigen::Matrix<double,1,NPARTS*3> tPartsV;
+
 
 
 class CDBelement
@@ -249,6 +252,22 @@ public:
              mOriJoints(pOri+pJoints),mPartsLocation(pPartLocations),mIndex(pIndex),mImagePath(pImagePath),mHandOri(pHandOri),
              mHandPos(pHandPos),mObjOri(pObjOri),mObjPos(pObjPos),mObjPath(pObjPath),mCamAt(pCamAt),mCamFrom(pCamFrom),mCamUp(pCamUp),
              mNextIndices(pNextIndices),mFeature(pFeature){}
+
+  // constructor for easy pose rendering
+  CDBelement(const tFullOriPoseV &pJoints,const unsigned &pIndex,
+      const std::string &pImagePath,const std::string &pObjPath):
+             mPartsLocation(""),mIndex(pIndex),mImagePath(pImagePath),mHandOri("(1 0 0 0)"),
+             mHandPos("(0.31,-0.57,0.02)"),mObjOri("(1 0 0 0)"),mObjPos("(0,0,0)"),
+             mObjPath(pObjPath),mCamAt("0 0 0"),mCamFrom("0 0 0"),mCamUp("0 0 0"),
+             mNextIndices("")
+  {
+    std::ostringstream lOSS;
+    for(int i=0;i<60;++i)
+      lOSS << pJoints[i] << " ";
+
+    mOriJoints = lOSS.str();
+  }
+
   CDBelement(const fsystem::path &pInfoPath, const unsigned &pIndex):
   mIndex(pIndex),mFeature(std::vector<float>(0))
   {

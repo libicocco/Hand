@@ -73,16 +73,38 @@ static buola::CCmdLineOption<std::string> gDBPathOption("db",'d',L"Path to db fi
 static buola::CCmdLineOption<unsigned> gNumViewsOption("nv",'v',L"Number of views to be render of each grasp step",10);
 static buola::CCmdLineOption<unsigned> gNStepsOption("ns",'s',L"Number of steps rendered for each grasp",5);
 
-int main(int pNArg,char **pArgs)
+void getRandomViews(const unsigned gNumViews,std::pair<C3DVector,C3DVector> *pFromUp)
 {
   // engine for generating real numbers between -1 and 1
   std::mt19937 lEngine(time(0));
   std::uniform_real_distribution<> lDist(-1,1);
 
+  // generate a vector of random camera origins(first) on the unit sphere,
+  // with random camera orientation (second)
+  for(int i=0;i<gNumViews;)
+  {
+    // generate a 3D point in a cube [-1,1]
+    pFromUp[i].first.Set(lDist(lEngine),lDist(lEngine),lDist(lEngine));
+    // if it inside the sphere centered in the origin with radious 1 and not in the origin
+    if(pFromUp[i].first.Modulus2()<=1 && pFromUp[i].first.Modulus2()!=0)
+    {
+      // strictly speaking lRand should be non-zero and not parallel to pFromUp[i].first
+      C3DVector lRand(lDist(lEngine),lDist(lEngine),lDist(lEngine));
+      //       pFromUp[i].first=normalize(pFromUp[i].first);
+      pFromUp[i].first=pFromUp[i].first*(gCamDistance/pFromUp[i].first.Modulus());
+      pFromUp[i].second=cross_product(pFromUp[i].first,lRand);
+      pFromUp[i].second=normalize(pFromUp[i].second);
+      ++i;
+    }
+  }
+}
+
+int main(int pNArg,char **pArgs)
+{
   buola_init(pNArg,pArgs);
   static const unsigned gNumViews(cmd_line().GetValue(gNumViewsOption));
   static const unsigned gNSteps(cmd_line().GetValue(gNStepsOption));
-  
+
   fsystem::path lObjectPathFS(SCENEPATH);
   lObjectPathFS/="objects/adductedThumb_onlyObject.obj";
   std::string lObjectPath = lObjectPathFS.string();
@@ -91,39 +113,22 @@ int main(int pNArg,char **pArgs)
   lHandObjPathFS/="rHandP3.obj";
   fsystem::path lTexturePathFS(SCENEPATH);
   lTexturePathFS/="hand_texture.ppm";
-  
+
   // rotation matrix of the camera wrt the palm
   // not used since we obtain the hand and the camera orientations
   double *lCam2PalmRArray=new double[9];
 
   // Hand skeleton with the hand mesh and texture
   CHandSkeleton lSkeleton(lHandObjPathFS.string().c_str(),lTexturePathFS.string().c_str());
-  
+
   scene::PRTTransform lOrigHandTransf=new scene::CRTTransform;
   scene::PRTTransform lObjTransf=new scene::CRTTransform;
   lOrigHandTransf->SetTranslation(lHandZero);
   lObjTransf->SetTranslation(lObjZero);
-  
-  // generate a vector of random camera origins(first) on the unit sphere,
-  // with random camera orientation (second)
+
   std::pair<C3DVector,C3DVector> *lXYZ=new std::pair<C3DVector,C3DVector>[gNumViews];
-  for(int i=0;i<gNumViews;)
-  {
-    // generate a 3D point in a cube [-1,1]
-    lXYZ[i].first.Set(lDist(lEngine),lDist(lEngine),lDist(lEngine));
-    // if it inside the sphere centered in the origin with radious 1 and not in the origin
-    if(lXYZ[i].first.Modulus2()<=1 && lXYZ[i].first.Modulus2()!=0)
-    {
-      // strictly speaking lRand should be non-zero and not parallel to lXYZ[i].first
-      C3DVector lRand(lDist(lEngine),lDist(lEngine),lDist(lEngine));
-//       lXYZ[i].first=normalize(lXYZ[i].first);
-      lXYZ[i].first=lXYZ[i].first*(gCamDistance/lXYZ[i].first.Modulus());
-      lXYZ[i].second=cross_product(lXYZ[i].first,lRand);
-      lXYZ[i].second=normalize(lXYZ[i].second);
-      ++i;
-    }
-  }
-  
+  getRandomViews(gNumViews,lXYZ);
+
   try
   {
     std::ofstream lHOGFS;
@@ -137,27 +142,27 @@ int main(int pNArg,char **pArgs)
     std::vector<float> lFeature;
     if(cmd_line().IsSet(gHOGPathOption))
       lHOGFS.open(cmd_line().GetValue(gHOGPathOption).c_str());
-    
+
     // we consider the rest position as all joints being 0
     tFullPoseV lRestPose = tFullPoseV::Zero();
     Hog<float> lHog;
     unsigned lFeatSize=lHog.getFeatSize();
     float *lFeatureA=new float[lFeatSize*gNumGrasps*gNSteps*gNumViews];
-    
+
     for(int p=0;p<gNumGrasps;++p)
     {
       // get the basic pose
       CDBelement lDBelem=lDBtaxonomy.query(p);
-      
+
       scene::PPerspectiveCamera lCamera=new scene::CPerspectiveCamera;
       lCamera->SetClipping(0.01,200);
-      
+
       scene::PScene lScene=new scene::CScene;
-      
+
       scene::CImageRenderer lRenderer;
       lRenderer.SetClearColor(buola::CColor(0,0,0));
       buola::img::CImage_rgb8 lImage({400,400});
-      
+
       tFullPoseV lFullPose;
       lDBelem.getFullPose(lFullPose);
 
@@ -198,25 +203,25 @@ int main(int pNArg,char **pArgs)
         lHandPosSS << lHT;
         //lHandPosSS << lHT.x << " " << lHT.y << " " << lHT.z;
         lDBelem.setHandPos(lHandPosSS.str());
-        
+
         lScene->GetWorld()->AddChild(lHandTransf);
         lHandTransf->AddChild(lSkeleton.GetSkeleton()->GetRoot()->GetTransform());
         lScene->AddObject(lSkeleton.GetSkeleton());
-        
+
         scene::PGeode lGeode=buola::scene::CGeode::Import(lObjectPath.c_str(),0.1); // why if I put this outside the loop it does weird things?
         lGeode->AttachTo(lObjTransf);
         lScene->GetWorld()->AddChild(lObjTransf);
-        
+
         lRenderer.SetScene(lScene);
-      
+
         for(int i=0;i<gNumViews;++i)
         {
-          
+
           C3DVector lAt(0,0,0);
           C3DVector lFrom(lXYZ[i].first);
           C3DVector lUp(lXYZ[i].second);
           lCamera->LookAt(lAt,lFrom,lUp);
-          
+
           lRenderer.SetCamera(lCamera);
           lRenderer.GetImage(lImage);
 
@@ -226,7 +231,7 @@ int main(int pNArg,char **pArgs)
           fsystem::path lPosePath(lFolderPath);
           lPosePath/=lPoseName.str();
           save(lImage,lPosePath.string());
-          
+
           // if required, compute and save the hog
           if(cmd_line().IsSet(gHOGPathOption))
           {
@@ -236,7 +241,7 @@ int main(int pNArg,char **pArgs)
             lImageCV.convertTo(lImageCV32F,CV_32FC3);
             cv::cvtColor(lImageCV,lGrayIm,CV_BGR2GRAY);
             cv::threshold(lGrayIm,lGrayIm,1,255,cv::THRESH_BINARY);
-            
+
             // compute contours to localize the hand
             std::vector<cv::Point> lAllContours;
             {
@@ -254,9 +259,9 @@ int main(int pNArg,char **pArgs)
                 "Run it again (to randomize the view point) or change the rendering parameters" << std::endl;
               exit(1);
             }
-            
+
             cv::Rect lBBox=cv::boundingRect(cv::Mat(lAllContours));
-            
+
             std::pair<cv::Mat,cv::Mat> lTstMaskCrop=std::make_pair(lImageCV32F(lBBox),lGrayIm(lBBox));
             lFeature=lHog.compute(lTstMaskCrop,99999999);
             std::copy(lFeature.begin(),lFeature.end(),&(lFeatureA[(p*(gNumViews*gNSteps)+f*gNumViews+i)*lFeatSize]));
@@ -267,7 +272,7 @@ int main(int pNArg,char **pArgs)
           {
             std::cout << lPosePath.string();
             lDBelem.setOri(getCam2PalmR(lSkeleton,lCamera));
-            
+
             lDBelem.setPartsLocation(partsLocation2String(lSkeleton,lCamera));
             lDBelem.setCamAtFromUp(lAt.x,lAt.y,lAt.z,lFrom.x,lFrom.y,lFrom.z,lUp.x,lUp.y,lUp.z);
             lDBelem.setImagePath(lPosePath.string());
@@ -277,7 +282,7 @@ int main(int pNArg,char **pArgs)
             lDB->insertElement(lDBelem);
           }
         }
-      lObjTransf->RemoveObject(lGeode);
+        lObjTransf->RemoveObject(lGeode);
       }
     }
     if(cmd_line().IsSet(gHOGPathOption))
@@ -296,6 +301,6 @@ int main(int pNArg,char **pArgs)
   {
     msg_info() << "caught exception " << pE.what() << "\n";
   }
-  
+
   return buola_finish();
 }

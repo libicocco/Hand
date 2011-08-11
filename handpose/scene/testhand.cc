@@ -65,6 +65,18 @@ using namespace buola;
 static buola::CCmdLineOption<std::string> gObjectPathOption("objpath",'o',L"Path to object .obj file");
 static buola::CCmdLineOption<std::string> gPosePathOption("posepath",'p',L"Path to pose file");
 
+// buola lookat(at,rot,dist) doesn't work reference vector don't work for me
+void myLookAt(const buola::C3DVector &pAt,const buola::C3DRotation &pOri, 
+    double pDist, const buola::scene::PPerspectiveCamera &pCamera)
+{
+  buola::CQuaternion lOri(pOri);
+    
+  buola::C3DVector lUp=lOri*buola::C3DVector(0,1,0);
+  buola::C3DVector lFrom=pAt-pDist*(lOri*buola::C3DVector(0,0,-1));
+
+  pCamera->LookAt(pAt,lFrom,lUp);
+}
+
 void addCamSlider(int y,scene::CSceneView *pScene,std::vector<CCamSlider*> &pRots,
         C3DRotation &pRot,double buola::C3DRotation::*pRotVal,
         const std::string &pCaption,scene::PPerspectiveCamera &pCam)
@@ -138,14 +150,11 @@ void addSlider(int y,const scene::EJointType &pType,scene::PBone &pBone,
 void setCamera(const double *pCam2PalmRArray,const CHandSkeleton &pSkeleton,const scene::PPerspectiveCamera &pCamera)
 {
   buola::CQuaternion lHandQ(pSkeleton[BONE_FOREARM]->GetTransform()->GetWorldTransform());
-  // pCam2PalmRArray = pCamera.conj() * lHandQ
-  // (pq).conj() = q.conj()*p.conj()
-  // pCamera = lHandQ * pCam2PalmRArray.conj()
   buola::CQuaternion lCam2Palm(pCam2PalmRArray);
-  buola::C3DRotation lCamRotation(-lHandQ*conj(lCam2Palm));
-  //buola::C3DRotation lCamRotation(conj(lHandQ)*(lCam2Palm));
-  std::cout << lHandQ << "|" << lHandQ*conj(lCam2Palm) << "|" << lCam2Palm << std::endl;
-  pCamera->LookAt(C3DVector(0,0,0),lCamRotation,gCamDistance);
+  buola::C3DRotation lCamRotation(lCam2Palm*conj(lHandQ));
+  myLookAt(C3DVector(0,0,0),lCamRotation,gCamDistance,pCamera);
+  //std::cout << pCamera->GetLookAtMatrix() << std::endl;
+  //std::cout << lHandQ << "|" << lHandQ*conj(lCam2Palm) << "|" << lCam2Palm << std::endl;
 }
 
 int main(int pNArg,char **pArgs)

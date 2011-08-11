@@ -35,6 +35,8 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 #include <buola/geometry/c3dvector.h>
 #include <buola/geometry/cperspectiveprojectionmatrix.h>
 
+#include <buola/image/io.h>
+
 #include <boost/array.hpp>
 enum EBone
 {
@@ -226,7 +228,7 @@ class CHandSkeleton
         mMesh->CalcNormals();
         mMesh->SmoothNormals();
         img::CImage_rgb8 lTexImage;
-        load(lTexImage,pTexturePath);
+        buola::img::load(lTexImage,pTexturePath);
         mMesh->SetTexture(lTexImage);
         mSkeleton->Prepare(mMesh);
 
