@@ -127,6 +127,11 @@ int main(int pNArg,char **pArgs)
     lDBPath/="hands.db";
     CDB *lDB=new CDB(lDBPath.string());
 
+    fsystem::path lHogPath(cmd_line().GetValue(gOutPathOption));
+    lHogPath/="hog.bin";
+    std::ofstream lHogOFS;
+    lHogOFS.open(lHogPath.string().c_str());
+
     // previously generated database with the basic poses
     fsystem::path lBasicRenderDbFS(SCENEPATH);
     lBasicRenderDbFS/="taxonomy.db";
@@ -181,12 +186,14 @@ int main(int pNArg,char **pArgs)
           lTmpElem.setImagePath(lPosePath.string());
           lTmpElem.setIndex(p*gNSteps*gNumViews+f*gNumViews+i);
           lHR.render(lTmpElem);
-          lHR.saveInfo(lTmpElem);
+          lHR.saveInfo(lTmpElem,&lHogOFS);
           lDB->insertElement(lTmpElem);
         }
       }
     }
-    lDB->finalizeStatement();
+    //lDB->finalizeStatement(); // done anyway when CDB is deleted
+    lHogOFS.close();
+
   }
   catch(std::exception &pE)
   {

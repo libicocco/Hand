@@ -68,7 +68,7 @@ class HandRenderer
     void render(const CDBelement &pDBelem);
 
     // save information about the rendering in the db element
-    void saveInfo(CDBelement &pDBelem);
+    void saveInfo(CDBelement &pDBelem,std::ofstream *pHogOFS=NULL);
 
   private:
 

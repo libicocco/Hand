@@ -86,10 +86,12 @@ void HandRenderer::render(const CDBelement &pDBelem)
     mObjTransf->RemoveObject(lGeode);
 }
 
-void HandRenderer::saveInfo(CDBelement &pDBelem)
+void HandRenderer::saveInfo(CDBelement &pDBelem,std::ofstream *pHogOFS)
 {
   computeHog();
   pDBelem.setFeature(mFeature);
+  if(pHogOFS!=NULL)
+    pHogOFS->write(reinterpret_cast<char*>(mFeature.data()),mFeature.size()*sizeof(float));
 
   pDBelem.setPartsLocation(partsLocation2String(mSkeleton,mCamera));
 
