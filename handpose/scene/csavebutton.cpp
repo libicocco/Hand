@@ -54,7 +54,7 @@ CSaveButton::CSaveButton(const CHandSkeleton &pSkeleton,
   }
 }
 
-inline void CSaveButton::OnPressed()
+void CSaveButton::OnPressed()
 {
   if(mURL.IsEmpty())
   {

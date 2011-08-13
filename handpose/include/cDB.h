@@ -18,23 +18,6 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
     along with Hand.  If not, see <http://www.gnu.org/licenses/>.
 
 **********************************************/
-/*
- * =====================================================================================
- *
- *       Filename:  cDB.h
- *
- *    Description:  class for creating and reading sqlite hand poses database
- *
- *        Version:  1.0
- *        Created:  12/29/2010 07:54:06 PM CET
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Javier Romero (jrgn), jrgn@kth.se
- *        Company:  CAS/CSC KTH
- *
- * =====================================================================================
- */
 
 #ifndef __CDB_H
 #define __CDB_H

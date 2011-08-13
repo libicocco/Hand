@@ -76,6 +76,8 @@ class HandRenderer
 
     void computeHog();
 
+    const std::string getCam2PalmR();
+
     scene::PPerspectiveCamera mCamera;
     scene::PScene mScene;
     scene::CImageRenderer mRenderer;

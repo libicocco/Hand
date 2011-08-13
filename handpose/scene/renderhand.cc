@@ -58,18 +58,18 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 
 #include "cDB.h"
 #include "cDBelement.h"
+#include "handRenderer.h"
 
 #include "handclass_config.h"
 
 static const buola::C3DVector lHandZero(0.31,-0.57,0.02);
 static const buola::C3DVector lHandRest(0.31,-0.5,0.02);
 static const buola::C3DVector lObjZero(0,0,0);
-static const double gCamDistance(0.3);
 static const unsigned gNumGrasps(31);
+static const tFullPoseV lRestPose = tFullPoseV::Zero();
 
 using namespace buola;
-static buola::CCmdLineOption<std::string> gHOGPathOption("hogpath",'h',L"Path to hog file to be saved","scene/hog.bin");
-static buola::CCmdLineOption<std::string> gDBPathOption("db",'d',L"Path to db file to be saved","scene/hands.db");
+static buola::CCmdLineOption<std::string> gOutPathOption("outpath",'f',L"Path to save the db and images","/tmp/out/");
 static buola::CCmdLineOption<unsigned> gNumViewsOption("nv",'v',L"Number of views to be render of each grasp step",10);
 static buola::CCmdLineOption<unsigned> gNStepsOption("ns",'s',L"Number of steps rendered for each grasp",5);
 
@@ -114,188 +114,79 @@ int main(int pNArg,char **pArgs)
   fsystem::path lTexturePathFS(SCENEPATH);
   lTexturePathFS/="hand_texture.ppm";
 
-  // rotation matrix of the camera wrt the palm
-  // not used since we obtain the hand and the camera orientations
-  double *lCam2PalmRArray=new double[9];
-
-  // Hand skeleton with the hand mesh and texture
-  CHandSkeleton lSkeleton(lHandObjPathFS.string().c_str(),lTexturePathFS.string().c_str());
-
-  scene::PRTTransform lOrigHandTransf=new scene::CRTTransform;
-  scene::PRTTransform lObjTransf=new scene::CRTTransform;
-  lOrigHandTransf->SetTranslation(lHandZero);
-  lObjTransf->SetTranslation(lObjZero);
-
   std::pair<C3DVector,C3DVector> *lXYZ=new std::pair<C3DVector,C3DVector>[gNumViews];
   getRandomViews(gNumViews,lXYZ);
 
   try
   {
-    std::ofstream lHOGFS;
-    CDB *lDB=(cmd_line().IsSet(gDBPathOption))?new CDB(cmd_line().GetValue(gDBPathOption)):NULL;
+    std::cout << lHandObjPathFS.string() << "," << lObjectPathFS.string() << std::endl;
+    HandRenderer lHR(lHandObjPathFS.string().c_str(),lTexturePathFS.string().c_str());
+
+    fsystem::path lDBPath(cmd_line().GetValue(gOutPathOption));
+    fsystem::create_directory(lDBPath);
+    lDBPath/="hands.db";
+    CDB *lDB=new CDB(lDBPath.string());
 
     // previously generated database with the basic poses
     fsystem::path lBasicRenderDbFS(SCENEPATH);
     lBasicRenderDbFS/="taxonomy.db";
     CDB lDBtaxonomy(lBasicRenderDbFS);
 
-    std::vector<float> lFeature;
-    if(cmd_line().IsSet(gHOGPathOption))
-      lHOGFS.open(cmd_line().GetValue(gHOGPathOption).c_str());
 
-    // we consider the rest position as all joints being 0
-    tFullPoseV lRestPose = tFullPoseV::Zero();
-    Hog<float> lHog;
-    unsigned lFeatSize=lHog.getFeatSize();
-    float *lFeatureA=new float[lFeatSize*gNumGrasps*gNSteps*gNumViews];
-
+    // each grasp has the same basic pose coming from lDBtaxonomy
     for(int p=0;p<gNumGrasps;++p)
     {
       // get the basic pose
-      CDBelement lDBelem=lDBtaxonomy.query(p);
+      CDBelement lGraspElem =lDBtaxonomy.query(p);
 
-      scene::PPerspectiveCamera lCamera=new scene::CPerspectiveCamera;
-      lCamera->SetClipping(0.01,200);
+      scene::PRTTransform lOrigHandTransf=new scene::CRTTransform;
+      setTransf(lGraspElem.getHandPos(),lGraspElem.getHandOri(),lOrigHandTransf);
 
-      scene::PScene lScene=new scene::CScene;
+      fsystem::path lGraspOutPath(cmd_line().GetValue(gOutPathOption));
+      std::ostringstream lGraspFolderOSS;
+      lGraspFolderOSS << std::setfill('0') << std::setw(3) << p;
+      lGraspOutPath/=lGraspFolderOSS.str();
+      fsystem::create_directory(lGraspOutPath.string());
 
-      scene::CImageRenderer lRenderer;
-      lRenderer.SetClearColor(buola::CColor(0,0,0));
-      buola::img::CImage_rgb8 lImage({400,400});
-
-      tFullPoseV lFullPose;
-      lDBelem.getFullPose(lFullPose);
-
-      // create the output folder for the images
-      std::stringstream lPoseFolder;
-      lPoseFolder << std::setfill('0');
-      lPoseFolder << std::setw(3) << p;
-      fsystem::path lFolderPath(fsystem::initial_path());
-      lFolderPath/="out/";
-      lFolderPath/=lPoseFolder.str();
-      fsystem::create_directory(lFolderPath);
-
-      setTransf(lDBelem.getHandPos(),lDBelem.getHandOri(),lOrigHandTransf);
+      // each step has the same actual interpolated pose
       for(int f=0;f<gNSteps;++f)
       {
-        // interpolate between the rest position (Zero) and the basic pose
+        CDBelement lTmpElem = lGraspElem;
+
+        tFullPoseV lFullPose;
+        lTmpElem.getFullPose(lFullPose);
+
         tFullPoseV lFullPoseInterp=((gNSteps-(f+1))*lRestPose+(f+1)*lFullPose)/gNSteps;
-        lDBelem.setFullPose(lFullPoseInterp);
-
-        double *lJointValues=new double[51];
-        lDBelem.getOriJoints(lCam2PalmRArray,lJointValues);
-
-        for(int i=0;i<17;++i)
-          for(int a=0;a<3;++a)
-            lSkeleton[i]->SetJointValue(gJointTypes[a],lJointValues[i*3+a]);
-        delete []lJointValues;
-
-        setTransf(lDBelem.getObjPos(),lDBelem.getObjOri(),lObjTransf);
-        lObjectPath=lDBelem.getObjPath();
-
-
+        lTmpElem.setFullPose(lFullPoseInterp);
+        
         // interpolate rest translation and basic translation
         scene::PRTTransform lHandTransf=new scene::CRTTransform;
         lHandTransf->SetTranslation(((gNSteps-(f+1))*lHandRest+(f+1)*lOrigHandTransf->GetTranslation())/gNSteps);
-
         std::ostringstream lHandPosSS;
-        C3DVector lHT =lHandTransf->GetTranslation(); 
-        lHandPosSS << lHT;
-        //lHandPosSS << lHT.x << " " << lHT.y << " " << lHT.z;
-        lDBelem.setHandPos(lHandPosSS.str());
+        lHandPosSS << lHandTransf->GetTranslation();
+        lTmpElem.setHandPos(lHandPosSS.str());
 
-        lScene->GetWorld()->AddChild(lHandTransf);
-        lHandTransf->AddChild(lSkeleton.GetSkeleton()->GetRoot()->GetTransform());
-        lScene->AddObject(lSkeleton.GetSkeleton());
-
-        scene::PGeode lGeode=buola::scene::CGeode::Import(lObjectPath.c_str(),0.1); // why if I put this outside the loop it does weird things?
-        lGeode->AttachTo(lObjTransf);
-        lScene->GetWorld()->AddChild(lObjTransf);
-
-        lRenderer.SetScene(lScene);
-
+        // each viewpoint defines completely the element
         for(int i=0;i<gNumViews;++i)
         {
+          lTmpElem.setCamAtFromUp(0,0,0,
+              lXYZ[i].first.x,lXYZ[i].first.y,lXYZ[i].first.z,
+              lXYZ[i].second.x,lXYZ[i].second.y,lXYZ[i].second.z);
 
-          C3DVector lAt(0,0,0);
-          C3DVector lFrom(lXYZ[i].first);
-          C3DVector lUp(lXYZ[i].second);
-          lCamera->LookAt(lAt,lFrom,lUp);
-
-          lRenderer.SetCamera(lCamera);
-          lRenderer.GetImage(lImage);
-
-          std::stringstream lPoseName;
+          std::ostringstream lPoseName;
           lPoseName << std::setfill('0');
           lPoseName << std::setw(3) << f << "_" << std::setw(3) << i << ".pgm";
-          fsystem::path lPosePath(lFolderPath);
+          fsystem::path lPosePath(lGraspOutPath);
           lPosePath/=lPoseName.str();
-          save(lImage,lPosePath.string());
-
-          // if required, compute and save the hog
-          if(cmd_line().IsSet(gHOGPathOption))
-          {
-            cv::Mat lImageCV=cv::Mat(buola::img::ipl_wrap(lImage),false);
-            cv::Mat lGrayIm(lImageCV.size(),CV_8UC1);
-            cv::Mat lImageCV32F(lImageCV.size(),CV_32FC3);
-            lImageCV.convertTo(lImageCV32F,CV_32FC3);
-            cv::cvtColor(lImageCV,lGrayIm,CV_BGR2GRAY);
-            cv::threshold(lGrayIm,lGrayIm,1,255,cv::THRESH_BINARY);
-
-            // compute contours to localize the hand
-            std::vector<cv::Point> lAllContours;
-            {
-              std::vector<std::vector<cv::Point> > lContours;
-              cv::Mat lTmp = lGrayIm.clone();
-              cv::findContours(lTmp, lContours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
-              for(int i=0;i<lContours.size();++i)
-                lAllContours.insert(lAllContours.end(),lContours[i].begin(),lContours[i].end());
-            }
-
-            // exit if there's no hand pixel; it would fail with a weird error when computing the hog
-            if(lAllContours.empty())
-            {
-              std::cerr << "There is no hand in the figure" << std::endl << 
-                "Run it again (to randomize the view point) or change the rendering parameters" << std::endl;
-              exit(1);
-            }
-
-            cv::Rect lBBox=cv::boundingRect(cv::Mat(lAllContours));
-
-            std::pair<cv::Mat,cv::Mat> lTstMaskCrop=std::make_pair(lImageCV32F(lBBox),lGrayIm(lBBox));
-            lFeature=lHog.compute(lTstMaskCrop,99999999);
-            std::copy(lFeature.begin(),lFeature.end(),&(lFeatureA[(p*(gNumViews*gNSteps)+f*gNumViews+i)*lFeatSize]));
-          }
-
-          // if required, save the pose parameters in a sqlite3 database
-          if(cmd_line().IsSet(gDBPathOption))
-          {
-            std::cout << lPosePath.string();
-            lDBelem.setOri(getCam2PalmR(lSkeleton,lCamera));
-
-            lDBelem.setPartsLocation(partsLocation2String(lSkeleton,lCamera));
-            lDBelem.setCamAtFromUp(lAt.x,lAt.y,lAt.z,lFrom.x,lFrom.y,lFrom.z,lUp.x,lUp.y,lUp.z);
-            lDBelem.setImagePath(lPosePath.string());
-            lDBelem.setIndex(p*(gNumViews*gNSteps)+f*gNumViews+i);
-            if(cmd_line().IsSet(gHOGPathOption))
-              lDBelem.setFeature(lFeature);
-            lDB->insertElement(lDBelem);
-          }
+          lTmpElem.setImagePath(lPosePath.string());
+          lTmpElem.setIndex(p*gNSteps*gNumViews+f*gNumViews+i);
+          lHR.render(lTmpElem);
+          lHR.saveInfo(lTmpElem);
+          lDB->insertElement(lTmpElem);
         }
-        lObjTransf->RemoveObject(lGeode);
       }
     }
-    if(cmd_line().IsSet(gHOGPathOption))
-    {
-      lHOGFS.write(reinterpret_cast<char*>(lFeatureA),lFeatSize*gNumGrasps*gNSteps*gNumViews*sizeof(float));
-      lHOGFS.close();
-    }
-    if(cmd_line().IsSet(gDBPathOption))
-    {
-      lDB->finalizeStatement();
-      //      delete lDB;
-    }
-    delete []lFeatureA;
+    lDB->finalizeStatement();
   }
   catch(std::exception &pE)
   {

@@ -121,6 +121,6 @@ int main(int argc,char* argv[])
     lHRender.saveInfo(lDBelem);
     lDB.insertElement(lDBelem);
   }
-  lDB.finalizeStatement();
+  //lDB.finalizeStatement();// done in the CDB destructor
   return 1;
 }
