@@ -88,6 +88,7 @@ class HandRenderer
     Hog<float> mHog;
     std::vector<float> mFeature;
     std::string mObjPath;
+    buola::CQuaternion mHandQ;
 };
 
 #endif // __HANDRENDERER_H

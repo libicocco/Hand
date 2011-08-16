@@ -78,8 +78,11 @@ void HandRenderer::render(const CDBelement &pDBelem)
   }
   mRenderer.SetCamera(mCamera);
 
+  //std::cout << "Q0: " << mSkeleton[BONE_FOREARM]->GetTransform()->GetWorldTransform() << std::endl;
+  // XXX changes wrist orientation!?!
   // render to image
   mRenderer.GetImage(mImage);
+  //std::cout << "Q1: " << mSkeleton[BONE_FOREARM]->GetTransform()->GetWorldTransform() << std::endl;
   save(mImage,pDBelem.getImagePath());
 
   if(!mObjPath.empty())
@@ -107,17 +110,17 @@ void HandRenderer::saveInfo(CDBelement &pDBelem,std::ofstream *pHogOFS)
 }
 void HandRenderer::setCamera(const double *pCam2PalmRArray)
 {
-  buola::CQuaternion lHandQ(mSkeleton[BONE_FOREARM]->GetTransform()->GetWorldTransform());
-  buola::CQuaternion lCam2Palm(pCam2PalmRArray);
-  buola::C3DRotation lCamRotation(lCam2Palm*conj(lHandQ));
-  buola::CQuaternion lOri(lCamRotation);
+  //buola::CQuaternion lHandQ(mSkeleton[BONE_FOREARM]->GetTransform()->GetWorldTransform());
+  mHandQ = buola::CQuaternion(mSkeleton[BONE_FOREARM]->GetTransform()->GetWorldTransform());
+  buola::CQuaternion lCam2PalmQ(pCam2PalmRArray);
+  //buola::CQuaternion lCamQ(lHandQ*conj(lCam2PalmQ));
+  buola::CQuaternion lCamQ(mHandQ*conj(lCam2PalmQ));
   C3DVector lAt(0,0,0);
 
-  buola::C3DVector lUp=lOri*buola::C3DVector(0,1,0);
-  buola::C3DVector lFrom=lAt-gCamDistance*(lOri*buola::C3DVector(0,0,-1));
+  buola::C3DVector lUp=conj(lCamQ)*buola::C3DVector(0,1,0);
+  buola::C3DVector lFrom=lAt-gCamDistance*(conj(lCamQ)*buola::C3DVector(0,0,-1));
 
   mCamera->LookAt(lAt,lFrom,lUp);
-
 }
 void HandRenderer::computeHog()
 {
@@ -155,12 +158,12 @@ void HandRenderer::computeHog()
 const std::string HandRenderer::getCam2PalmR()
 {
   std::ostringstream lS;
-  buola::CQuaternion lHandQuat(mSkeleton[BONE_FOREARM]->GetTransform()->GetWorldTransform());
-  buola::CQuaternion lCamQuat(mCamera->GetLookAtMatrix());
-  buola::CQuaternion lHandCamQuat=conj(lCamQuat)*lHandQuat;
-  buola::C3DMatrix lHandCamMat(buola::nRotate,lHandCamQuat);
+  //buola::CQuaternion lHandQ(mSkeleton[BONE_FOREARM]->GetTransform()->GetWorldTransform());
+  buola::CQuaternion lCamQ(mCamera->GetLookAtMatrix());
+  buola::CQuaternion lCam2PalmQ=conj(lCamQ)*mHandQ;
+  buola::C3DMatrix lCam2PalmM(buola::nRotate,lCam2PalmQ);
   for(int i=0;i<3;++i)
     for(int j=0;j<3;++j)
-      lS << lHandCamMat(i,j) << " ";
+      lS << lCam2PalmM(i,j) << " ";
   return lS.str();
 }
