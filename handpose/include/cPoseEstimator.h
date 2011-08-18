@@ -32,6 +32,7 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 #include "cTemporalFilter.h"
 #include "cPoselistMulti.h"
 
+#include "handclass_config.h"
 #include "typeDefinitions.h"
 
 #ifdef CAM_ACCESS

@@ -62,7 +62,6 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 
 #include "handclass_config.h"
 
-static const buola::C3DVector lHandZero(0.31,-0.57,0.02);
 static const buola::C3DVector lHandRest(0.31,-0.5,0.02);
 static const buola::C3DVector lObjZero(0,0,0);
 static const unsigned gNumGrasps(31);

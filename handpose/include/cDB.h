@@ -31,6 +31,20 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 #include "typeDefinitions.h"
 #include "cDBelement.h"
 
+static char sPragmas[]=
+"PRAGMA synchronous=0;\n"
+"PRAGMA count_changed=0;\n"
+"PRAGMA cache_size=5000;\n"
+"PRAGMA auto_vacuum=0;\n"
+"PRAGMA temp_store=MEMORY;\n"
+"PRAGMA legacy_file_format=OFF;\n"
+"PRAGMA encoding=\"UTF-8\";";
+static char sGetInfo[]="SELECT * FROM hands WHERE image_id=?";
+static char sCreate[]="create table hands (image_id integer primary key,orijoints text,parts text,"
+                      "image_path text,hand_ori text,hand_pos text,obj_ori text,obj_pos text,"
+                      "obj_path text,camAt text,camFrom text,camUp text,nextIndices text, feature text)";
+                      //"obj_path text,camAt text,camFrom text,camUp text,nextIndices text, feature blob)";
+static char sWrite[]="insert into hands values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 namespace fsystem=boost::filesystem;
 
 class CDB

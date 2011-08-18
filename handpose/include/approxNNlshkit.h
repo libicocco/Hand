@@ -22,14 +22,11 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 #define APPROXNNLSHKITH
 
 #include <lshkit.h>
-#include <boost/timer.hpp>
-#include <boost/format.hpp>
 #include <vector>
 #include <iostream>
 #include <fstream>
 #include <gsl/gsl_multifit.h>
 #include "nn.h"
-#include "handclass_config.h"
 #include "createLSHindex.h"
 
 using namespace lshkit;
@@ -57,8 +54,8 @@ private:
 public:
 	// pNPoints and pDimPoints are dummy parameters
 	// given for keeping a standard interface
-	approxNNlshkit(int pK,int pNPoints=106920,int pDimPoints=512,
-								 const char *pDataPath=LSHBINPATH,const char *pIndexPath=LSHINDEXPATH,
+	approxNNlshkit(int pK,int pNPoints,int pDimPoints,
+								 const char *pDataPath,const char *pIndexPath,
 								 const int pNBins=50,const int pNTables=10):
 								 mInitialized(false),mDataPath(pDataPath),mIndexPath(pIndexPath),mK(pK),
 								 mNBins(pNBins),mNTables(pNTables),

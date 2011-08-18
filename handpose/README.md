@@ -40,7 +40,7 @@ You can build the basic rendering database:
 
 And use it to create the big database:
 
-    rm scene/hog.bin scene/hands.db && build/scene/renderhand  --hogpath scene/hog.bin --db scene/hands.db
+    rm -r /tmp/out/ ; build/scene/renderhand  --outpath /tmp/out/ 
 
 Contributors:
 -------------

@@ -18,23 +18,6 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
     along with Hand.  If not, see <http://www.gnu.org/licenses/>.
 
 **********************************************/
-/*
- * =====================================================================================
- * 
- *       Filename:  chamfer.h
- * 
- *    Description:  Code for chamfer "NN"
- * 
- *        Version:  1.0
- *        Created:  05/27/10 18:11:02 CEST
- *       Revision:  none
- *       Compiler:  gcc
- * 
- *         Author:  Javier Romero (jrgn), jrgn@kth.se
- *        Company:  CAS/CSC KTH
- * 
- * =====================================================================================
- */
 
 #ifndef CHAMFERNN
 #define CHAMFERNN
@@ -46,7 +29,6 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 #include <boost/format.hpp>
 #include <boost/progress.hpp>
 
-#include "handclass_config.h"
 #include "constants.h"
 #include "nn.h"
 typedef std::pair<unsigned short,unsigned short> tPairUShort;
@@ -62,7 +44,7 @@ class chamferNN: public nn<tPairUShort>
         std::vector<std::pair<int,float> >mNNdist_all;
     public:
         // pIndexPath is included in order to have a common signature with indexed approxNN like flann
-        chamferNN(int pK,int pNPoints=106920,int pDimPoints=512,const char *pDataPath=FLANNBINPATH,const char *pIndexPath="ignored"):mK(pK),mInitialized(false),mDataPath(pDataPath){this->nn_set_values(pNPoints,pDimPoints,mDataPath);initialize();} /**< @todo data.bin and data.idx should be configured with cmake*/
+        chamferNN(int pK,int pNPoints,int pDimPoints,const char *pDataPath,const char *pIndexPath="ignored"):mK(pK),mInitialized(false),mDataPath(pDataPath){this->nn_set_values(pNPoints,pDimPoints,mDataPath);initialize();} /**< @todo data.bin and data.idx should be configured with cmake*/
         ~chamferNN(){delete []mData;}
 
         bool initialize()

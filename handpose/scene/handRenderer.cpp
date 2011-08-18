@@ -13,6 +13,10 @@ HandRenderer::HandRenderer(const char* pHandObjPath,const char* pHandTexturePath
 {
   mCamera->SetClipping(0.01,200);
   mRenderer.SetClearColor(buola::CColor(0,0,0));
+
+  mScene->GetWorld()->AddChild(mHandTransf);
+  mHandTransf->AddChild(mSkeleton.GetSkeleton()->GetRoot()->GetTransform());
+  mScene->AddObject(mSkeleton.GetSkeleton());
 }
 
 void HandRenderer::render(const CDBelement &pDBelem)
@@ -30,24 +34,26 @@ void HandRenderer::render(const CDBelement &pDBelem)
     setTransf("(0.31,-0.57,0.02)","(1 0 0 0)",mHandTransf);
   else
     setTransf(lHandPos,pDBelem.getHandOri(),mHandTransf);
-  mScene->GetWorld()->AddChild(mHandTransf);
-  mHandTransf->AddChild(mSkeleton.GetSkeleton()->GetRoot()->GetTransform());
-  mScene->AddObject(mSkeleton.GetSkeleton());
 
-  mObjPath=pDBelem.getObjPath();
-  scene::PGeode lGeode;
-  if(!mObjPath.empty())
+  std::string lObjPath = pDBelem.getObjPath();
+  if(mObjPath.compare(lObjPath)) // different object
   {
-    // place object in scene according to mObjTransf
-    std::string lObjPos = pDBelem.getObjPos();
-    if(!lObjPos.compare("(0,0,0)"))
-      setTransf("(0,0,0)","(1 0 0 0)",mObjTransf);
-    else
-      setTransf(lObjPos,pDBelem.getObjOri(),mObjTransf);
+    if(!mObjPath.empty())
+      mObjTransf->RemoveObject(mGeode);
+    mObjPath = lObjPath;
+    if(!mObjPath.empty())
+    {
+      // place object in scene according to mObjTransf
+      std::string lObjPos = pDBelem.getObjPos();
+      if(!lObjPos.compare("(0,0,0)"))
+        setTransf("(0,0,0)","(1 0 0 0)",mObjTransf);
+      else
+        setTransf(lObjPos,pDBelem.getObjOri(),mObjTransf);
 
-    lGeode=buola::scene::CGeode::Import(mObjPath.c_str(),0.1);
-    lGeode->AttachTo(mObjTransf);
-    mScene->GetWorld()->AddChild(mObjTransf);
+      mGeode=buola::scene::CGeode::Import(mObjPath.c_str(),0.1);
+      mGeode->AttachTo(mObjTransf);
+      mScene->GetWorld()->AddChild(mObjTransf);
+    }
   }
 
   mRenderer.SetScene(mScene);
@@ -85,8 +91,6 @@ void HandRenderer::render(const CDBelement &pDBelem)
   //std::cout << "Q1: " << mSkeleton[BONE_FOREARM]->GetTransform()->GetWorldTransform() << std::endl;
   save(mImage,pDBelem.getImagePath());
 
-  if(!mObjPath.empty())
-    mObjTransf->RemoveObject(lGeode);
 }
 
 void HandRenderer::saveInfo(CDBelement &pDBelem,std::ofstream *pHogOFS)
@@ -110,11 +114,10 @@ void HandRenderer::saveInfo(CDBelement &pDBelem,std::ofstream *pHogOFS)
 }
 void HandRenderer::setCamera(const double *pCam2PalmRArray)
 {
-  //buola::CQuaternion lHandQ(mSkeleton[BONE_FOREARM]->GetTransform()->GetWorldTransform());
-  mHandQ = buola::CQuaternion(mSkeleton[BONE_FOREARM]->GetTransform()->GetWorldTransform());
+  mScene->Update();// necessary to obtain the correct lHandQ
+  buola::CQuaternion lHandQ(mSkeleton[BONE_FOREARM]->GetTransform()->GetWorldTransform());
   buola::CQuaternion lCam2PalmQ(pCam2PalmRArray);
-  //buola::CQuaternion lCamQ(lHandQ*conj(lCam2PalmQ));
-  buola::CQuaternion lCamQ(mHandQ*conj(lCam2PalmQ));
+  buola::CQuaternion lCamQ(lHandQ*conj(lCam2PalmQ));
   C3DVector lAt(0,0,0);
 
   buola::C3DVector lUp=conj(lCamQ)*buola::C3DVector(0,1,0);
@@ -158,9 +161,10 @@ void HandRenderer::computeHog()
 const std::string HandRenderer::getCam2PalmR()
 {
   std::ostringstream lS;
-  //buola::CQuaternion lHandQ(mSkeleton[BONE_FOREARM]->GetTransform()->GetWorldTransform());
+  //mScene->Update(); // probably not necessary; done after rendering
+  buola::CQuaternion lHandQ(mSkeleton[BONE_FOREARM]->GetTransform()->GetWorldTransform());
   buola::CQuaternion lCamQ(mCamera->GetLookAtMatrix());
-  buola::CQuaternion lCam2PalmQ=conj(lCamQ)*mHandQ;
+  buola::CQuaternion lCam2PalmQ=conj(lCamQ)*lHandQ;
   buola::C3DMatrix lCam2PalmM(buola::nRotate,lCam2PalmQ);
   for(int i=0;i<3;++i)
     for(int j=0;j<3;++j)

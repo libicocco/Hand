@@ -24,7 +24,6 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 #include <iostream>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <Eigen/Dense>
-#include "handclass_config.h"
 #include "cPose.h"
 #include "cDB.h"
 #include "typeDefinitions.h"

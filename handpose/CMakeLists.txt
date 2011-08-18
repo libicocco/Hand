@@ -15,8 +15,6 @@ set (SCENE_PATH ${CMAKE_SOURCE_DIR}/scene)
 set(DATA_BASEPATH ${CMAKE_SOURCE_DIR} CACHE STRING "")
 
 option(CAM_ACCESS "Do you have access to the cameras(requires robot)?" OFF)
-set(HOG_PATH ${DATA_BASEPATH}/logFULL.txt CACHE FILEPATH "Write the path to the db HOG file" )
-set(IMG_PATH ${DATA_BASEPATH}/renderedHand CACHE FILEPATH "Write the path to the images folder")
 set(FLANN_BIN_PATH ${DATA_BASEPATH}/flann.bin CACHE FILEPATH "Write the path to the flann binary file" )
 set(FLANN_INDEX_PATH ${DATA_BASEPATH}/flann.idx CACHE FILEPATH "Write the path to the flann index file")
 set(LSH_BIN_PATH ${DATA_BASEPATH}/data.bin CACHE FILEPATH "Write the path to the lsh binary file" )

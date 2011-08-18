@@ -1,14 +1,6 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
-static const char *BASEPATH="@DATA_BASEPATH@";
-static const char *HOGPATH="@HOG_PATH@";
-static const char *IMGPATH="@IMG_PATH@";
-static const char *FLANNBINPATH="@FLANN_BIN_PATH@";
-static const char *FLANNINDEXPATH="@FLANN_INDEX_PATH@";
-static const char *LSHBINPATH="@LSH_BIN_PATH@";
-static const char *LSHINDEXPATH="@LSH_INDEX_PATH@";
-static const char *DBPATH="@DB_PATH@";
 static const char *SCENEPATH="@SCENE_PATH@";
 #cmakedefine CAM_ACCESS
 

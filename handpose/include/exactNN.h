@@ -18,23 +18,6 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
     along with Hand.  If not, see <http://www.gnu.org/licenses/>.
 
 **********************************************/
-/*
- * =====================================================================================
- * 
- *       Filename:  exactNN.h
- * 
- *    Description:  Code for exact NN using SSE
- * 
- *        Version:  1.0
- *        Created:  05/27/10 18:11:02 CEST
- *       Revision:  none
- *       Compiler:  gcc
- * 
- *         Author:  Javier Romero (jrgn), jrgn@kth.se
- *        Company:  CAS/CSC KTH
- * 
- * =====================================================================================
- */
 
 #ifndef EXACTNN
 #define EXACTNN
@@ -44,14 +27,11 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 #include <algorithm>
 #include <vector>
 #include <fstream>
-#include <boost/format.hpp>
-#include <boost/progress.hpp>
+#include <chrono>
 #include <xmmintrin.h>
 
 #include "nn.h"
-#include "handclass_config.h"
 #include "typeDefinitions.h"
-//#include "constants.h"
 
 template<typename tType>
 class exactNN: public nn<tType>
@@ -83,7 +63,8 @@ private:
   }
 public:
   // pIndexPath is included in order to have a common signature with indexed approxNN like flann
-  exactNN(int pK,int pNPoints=106920,int pDimPoints=512,const char *pDataPath=FLANNBINPATH,const char *pIndexPath="ignored"):
+  //exactNN(int pK,int pNPoints=106920,int pDimPoints=512,const char *pDataPath=FLANNBINPATH,const char *pIndexPath="ignored"):
+  exactNN(int pK,int pNPoints,int pDimPoints,const char *pDataPath,const char *pIndexPath="ignored"):
   mK(pK),mDataToDeallocate(true),mInitialized(false),mDataPath(pDataPath){this->nn_set_values(pNPoints,pDimPoints,mDataPath);initialize();}
   exactNN(int pK,int pNPoints=106920,int pDimPoints=512,tType *pData=NULL,const char *pIndexPath="ignored"):
   mK(pK),mDataToDeallocate(false),mInitialized(false),mData(pData){this->nn_set_values(pNPoints,pDimPoints,mDataPath);initialize();}
@@ -101,9 +82,9 @@ public:
   bool initialize()
   {
     #ifndef NDEBUG
+    namespace sc = std::chrono;
     std::cout << "LOADING DATA..." << std::endl;
-    boost::timer t;
-    t.restart();
+    auto lSinceEpoch = sc::system_clock::now().time_since_epoch();
     #endif
     if(mDataToDeallocate)
     {
@@ -119,12 +100,13 @@ public:
     }
     mFeatDataData = new tType[this->nPoints*this->pointsDimension];
     #ifndef NDEBUG
-    std::cout << boost::format("LOAD TIME: %1%s.") % t.elapsed() << std::endl;
+		std::cout << "LOAD TIME: " << 
+      sc::duration_cast<sc::microseconds>(lSinceEpoch).count() << " us"  << std::endl;
     #endif
     
     #ifndef NDEBUG
     std::cout << "LOADING INDEX..." << std::endl;
-    t.restart();
+    lSinceEpoch = sc::system_clock::now().time_since_epoch();
     #endif
     mDataData = new tType[this->nPoints*this->pointsDimension];
     selfDot(mData,this->nPoints,mDataData);
@@ -132,7 +114,8 @@ public:
     mNNdist_all.resize(this->nPoints);
     
     #ifndef NDEBUG
-    std::cout << boost::format("LOAD TIME: %1%s.") % t.elapsed() << std::endl;
+		std::cout << "LOAD TIME: " << 
+      sc::duration_cast<sc::microseconds>(lSinceEpoch).count() << " us"  << std::endl;
     #endif
     //        std::cout << "INDEX COULDN'T BE LOADED" << std::endl;
     //        return 0;
@@ -141,8 +124,8 @@ public:
   const tPairV& computeNN(const std::vector<tType>& pFeat)
   {
     #ifndef NDEBUG
-    boost::timer t;
-    t.restart();
+    namespace sc = std::chrono;
+    auto lSinceEpoch = sc::system_clock::now().time_since_epoch();
     #endif
     tType lFeatData[this->pointsDimension];
     //     std::cout << this->pointsDimension << std::endl;

@@ -54,7 +54,7 @@ class CSaveButton
         buola::scene::CSceneView *pScene);
 
     void saveURL(const buola::CURL &pURL){mURL=pURL;OnPressed();}
-    inline void OnPressed();
+    void OnPressed();
 };
 
 #endif

@@ -39,9 +39,6 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 #include <opencv2/highgui/highgui_c.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <cmath>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/progress.hpp>
-#include <boost/format.hpp>
 #include "utils.h"
 #include "bb.h"
 #include "distTransform.h"

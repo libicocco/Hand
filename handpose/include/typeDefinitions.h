@@ -22,7 +22,6 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 #include <queue>
 #include <Eigen/Dense>
 #include <boost/filesystem.hpp>
-#include "boost/date_time/posix_time/posix_time.hpp"
 
 #include <boost/accumulators/numeric/functional/vector.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
@@ -42,7 +41,6 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
 
 namespace fsystem=boost::filesystem;
 namespace acc=boost::accumulators;
-namespace btime=boost::posix_time;
 
 typedef std::priority_queue<fsystem::path,std::vector<fsystem::path>,std::greater<fsystem::path>> tPriorityPathQ;
 

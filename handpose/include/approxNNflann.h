@@ -18,38 +18,18 @@ This file is part of the Hand project (https://github.com/libicocco/Hand).
     along with Hand.  If not, see <http://www.gnu.org/licenses/>.
 
 **********************************************/
-/*
- * =====================================================================================
- * 
- *       Filename:  approxNNflann.h
- * 
- *    Description:  wrapper to use flann as my ANN scheme
- * 
- *        Version:  1.0
- *        Created:  05/27/10 18:11:02 CEST
- *       Revision:  none
- *       Compiler:  gcc
- * 
- *         Author:  Javier Romero (jrgn), jrgn@kth.se
- *        Company:  CAS/CSC KTH
- * 
- * =====================================================================================
- */
 
 #ifndef APPROXNNFLANN
 #define APPROXNNFLANN
 
 //#include <unistd.h>
-#include <boost/timer.hpp>
-#include <boost/format.hpp>
-#include <boost/progress.hpp>
+#include <chrono>
 #include <opencv2/core/core.hpp>
 #include <opencv2/flann/flann.hpp>
 #include <vector>
 #include <iostream>
 #include <fstream>
 #include "nn.h"
-#include "handclass_config.h"
 
 
 /** 
@@ -69,8 +49,8 @@ private:
 	
 	cv::flann::Index *mIndex;
 public:
-	approxNNflann(const int pK,const int pNPoints=106920,const int pDimPoints=512,const char *pDataPath=FLANNBINPATH,
-								const char *pIndexPath=FLANNINDEXPATH,const float pPrecision=0.9,const float pBuildWeight=0.1):
+  approxNNflann(const int pK,const int pNPoints,const int pDimPoints,const char *pDataPath,const char *pIndexPath,
+                const float pPrecision=0.9,const float pBuildWeight=0.1):
 								mK(pK),mInitialized(false),mDataPath(pDataPath),mIndexPath(pIndexPath),mPrecision(pPrecision),mBuildWeight(pBuildWeight)
 								{this->nn_set_values(pNPoints,pDimPoints,mDataPath);initialize();} /**< @todo data.bin and data.idx should be configured with cmake*/
 	~approxNNflann(){delete mIndex;delete mData;}
@@ -78,9 +58,9 @@ public:
 	bool initialize()
 	{
 		#ifndef NDEBUG
+    namespace sc = std::chrono;
 		std::cout << "LOADING DATA..." << std::endl;
-		boost::timer t;
-		t.restart();
+    auto lSinceEpoch = sc::system_clock::now().time_since_epoch();
 		#endif
 		mData = new tType[this->nPoints*this->pointsDimension];
 		std::ifstream lS(mDataPath,std::ifstream::in|std::ifstream::binary);
@@ -92,12 +72,13 @@ public:
 		lS.read((char*)mData,this->nPoints*this->pointsDimension*sizeof(tType));
 		cv::Mat lMat = cv::Mat(this->nPoints,this->pointsDimension,CV_32FC1,mData);
 		#ifndef NDEBUG
-		std::cout << boost::format("LOAD TIME: %1%s.") % t.elapsed() << std::endl;
+		std::cout << "LOAD TIME: " << 
+      sc::duration_cast<sc::microseconds>(sc::system_clock::now().time_since_epoch() - lSinceEpoch).count() << " us"  << std::endl;
 		#endif
 		
 		#ifndef NDEBUG
 		std::cout << "LOADING INDEX..." << std::endl;
-		t.restart();
+    lSinceEpoch = sc::system_clock::now().time_since_epoch();
 		#endif
 		if(access(mIndexPath,F_OK)==0)
 			mIndex = new cv::flann::Index(lMat,cv::flann::SavedIndexParams(mIndexPath)); 
@@ -108,15 +89,16 @@ public:
 			mIndex->save(mIndexPath);
 		}
 		#ifndef NDEBUG
-		std::cout << boost::format("LOAD TIME: %1%s.") % t.elapsed() << std::endl;
+		std::cout << "LOAD TIME: " << 
+      sc::duration_cast<sc::microseconds>(lSinceEpoch).count() << " us"  << std::endl;
 		#endif
 		return true;
 	}
 	const tPairV& computeNN(const std::vector<tType>& pFeat)
 	{
 		#ifndef NDEBUG
-		boost::timer t;
-		t.restart();
+    namespace sc = std::chrono;
+    auto lSinceEpoch = sc::system_clock::now().time_since_epoch();
 		#endif
 		this->nndist.clear();
 		std::vector<int> lIndices(mK);
@@ -130,7 +112,8 @@ public:
 			}
 		}
 		#ifndef NDEBUG
-		std::cout << boost::format("QUERY TIME: %1%s.") % t.elapsed() << std::endl;
+		std::cout << "QUERY TIME: " << 
+      sc::duration_cast<sc::microseconds>(lSinceEpoch).count() << " us"  << std::endl;
 		#endif
 		return this->nndist;
 	}
